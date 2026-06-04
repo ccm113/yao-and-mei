@@ -192,13 +192,33 @@ def home_page():
         cols = st.columns(4)
         for i, photo in enumerate(photos):
             with cols[i % 4]:
-                st.image(photo['url'], use_column_width=True)
+                rotation = photo.get('rotation', 0)
+                # 使用CSS旋转照片
+                st.markdown(f"""
+                <div style="transform: rotate({rotation}deg); margin: 10px;">
+                    <img src="{photo['url']}" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);" />
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # 旋转控制按钮
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button(f"↻ 左旋 {i}", key=f"left_{i}"):
+                        photos[i]['rotation'] = (rotation - 90) % 360
+                        save_data(PHOTOS_FILE, photos)
+                        st.rerun()
+                with col2:
+                    if st.button(f"↺ 右旋 {i}", key=f"right_{i}"):
+                        photos[i]['rotation'] = (rotation + 90) % 360
+                        save_data(PHOTOS_FILE, photos)
+                        st.rerun()
     
     # 添加照片按钮
     if st.button("➕ 添加新照片"):
         photos.append({
             "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200",
-            "caption": "新照片"
+            "caption": "新照片",
+            "rotation": 0
         })
         save_data(PHOTOS_FILE, photos)
         st.rerun()
