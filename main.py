@@ -163,8 +163,7 @@ def home_page():
         st.session_state['splash_shown'] = True
         show_heart_animation()
     
-    st.title("🏠 首页")
-    st.subheader("💖 垚＆槑 的精神小世界")
+
     
     # 照片展示
     st.markdown("---")
