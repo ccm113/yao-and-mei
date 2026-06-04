@@ -4,7 +4,7 @@ import numpy as np
 import random
 import time
 import math
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 from PIL import Image
 import json
@@ -26,7 +26,7 @@ def init_files():
             json.dump([
                 {"url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200", "caption": "相识的那天"},
                 {"url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", "caption": "第一次约会"},
-                {"url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=200", "caption": "一起看日落"},
+                {"url": "https://images.unsplash.com/photo-152220176988-66273c2fd55f?w=200", "caption": "一起看日落"},
                 {"url": "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=200", "caption": "海边漫步"}
             ], f)
     
@@ -180,7 +180,6 @@ def home_page():
     if 'splash_shown' not in st.session_state:
         st.session_state['splash_shown'] = True
         show_heart_animation()
-    
 
     
     # 照片展示
@@ -188,330 +187,116 @@ def home_page():
     st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
-    # 生成椭圆轮播HTML
-    import json
-    photos_json = json.dumps(photos).replace('"', '\\"')
+    # 使用简单的网格布局
+    if photos:
+        cols = st.columns(4)
+        for i, photo in enumerate(photos):
+            with cols[i % 4]:
+                st.image(photo['url'], use_column_width=True)
     
-    carousel_html = '''
-    <style>
-    .carousel-container {
-        width: 100%;
-        height: 450px;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .carousel-item {
-        position: absolute;
-        width: 110px;
-        height: 110px;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
-        object-fit: cover;
-        z-index: 5;
-        border: 3px solid white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    .carousel-item:hover {
-        transform: scale(1.2);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        z-index: 20;
-    }
-    
-    .add-btn {
-        position: absolute;
-        width: 75px;
-        height: 75px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ff6b9d, #ff8e53);
-        border: 4px solid white;
-        color: white;
-        font-size: 32px;
-        cursor: pointer;
-        box-shadow: 0 8px 25px rgba(255,107,157,0.5);
-        transition: transform 0.3s, box-shadow 0.3s;
-        z-index: 30;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .add-btn:hover {
-        transform: scale(1.15);
-        box-shadow: 0 12px 35px rgba(255,107,157,0.7);
-    }
-    
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.8);
-        backdrop-filter: blur(5px);
-    }
-    
-    .modal-content {
-        background-color: #ffffff;
-        margin: 8% auto;
-        padding: 25px;
-        border-radius: 20px;
-        width: 85%;
-        max-width: 550px;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        animation: modalFadeIn 0.3s ease-out;
-    }
-    
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    .modal-content img {
-        max-width: 100%;
-        max-height: 450px;
-        border-radius: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .modal-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-    }
-    
-    .modal-btn {
-        padding: 12px 35px;
-        border: none;
-        border-radius: 30px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: 600;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .modal-btn:hover {
-        transform: translateY(-2px);
-    }
-    
-    .delete-btn {
-        background: linear-gradient(135deg, #ff4757, #ff6b81);
-        color: white;
-        box-shadow: 0 4px 15px rgba(255,71,87,0.4);
-    }
-    
-    .replace-btn {
-        background: linear-gradient(135deg, #3742fa, #5352ed);
-        color: white;
-        box-shadow: 0 4px 15px rgba(55,66,250,0.4);
-    }
-    
-    .close-btn {
-        color: #999;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-    
-    .close-btn:hover {
-        color: #333;
-    }
-    </style>
-    
-    <div class="carousel-container" id="carouselContainer">
-        <button class="add-btn" onclick="window.location.href='?add_photo=true'">+</button>
-    </div>
-    
-    <div id="photoModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modalImage" src="" />
-            <div class="modal-buttons">
-                <button class="modal-btn delete-btn" onclick="deletePhoto()">删除</button>
-                <button class="modal-btn replace-btn" onclick="replacePhoto()">替换</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    let currentIndex = -1;
-    let photos = JSON.parse('''' + photos_json + '''');
-    let angle = 0;
-    let animationId;
-    
-    function initCarousel() {
-        const container = document.getElementById('carouselContainer');
-        
-        photos.forEach(function(photo, index) {
-            const img = document.createElement('img');
-            img.src = photo.url;
-            img.className = 'carousel-item';
-            img.setAttribute('data-index', index);
-            img.onclick = function() { 
-                showModal(photo.url, index); 
-            };
-            container.appendChild(img);
-        });
-        
-        animate();
-    }
-    
-    function animate() {
-        const items = document.querySelectorAll('.carousel-item');
-        const container = document.getElementById('carouselContainer');
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        
-        const centerX = containerWidth / 2;
-        const centerY = containerHeight / 2;
-        const radiusX = containerWidth * 0.32;
-        const radiusY = containerHeight * 0.22;
-        
-        items.forEach(function(item, index) {
-            const itemAngle = angle + (index * (360 / items.length) * Math.PI / 180);
-            const x = centerX - 55 + radiusX * Math.cos(itemAngle);
-            const y = centerY - 55 + radiusY * Math.sin(itemAngle);
-            
-            item.style.left = x + 'px';
-            item.style.top = y + 'px';
-            item.style.transform = 'translate(0, 0)';
-            
-            // 根据位置调整大小和透明度
-            const visibility = (Math.cos(itemAngle) + 1) / 2;
-            const scale = 0.75 + visibility * 0.25;
-            item.style.transform = 'scale(' + scale + ')';
-            item.style.opacity = 0.6 + visibility * 0.4;
-            item.style.zIndex = Math.floor(visibility * 10) + 5;
-        });
-        
-        angle += 0.008;
-        animationId = requestAnimationFrame(animate);
-    }
-    
-    function showModal(src, index) {
-        currentIndex = index;
-        document.getElementById('modalImage').src = src;
-        document.getElementById('photoModal').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModal() {
-        document.getElementById('photoModal').style.display = 'none';
-        currentIndex = -1;
-        document.body.style.overflow = 'auto';
-    }
-    
-    function deletePhoto() {
-        if (currentIndex >= 0) {
-            window.location.href = '?delete=' + currentIndex;
-        }
-    }
-    
-    function replacePhoto() {
-        if (currentIndex >= 0) {
-            window.location.href = '?replace=' + currentIndex;
-        }
-    }
-    
-    window.onclick = function(event) {
-        const modal = document.getElementById('photoModal');
-        if (event.target == modal) {
-            closeModal();
-        }
-    };
-    
-    // 初始化
-    initCarousel();
-    
-    // 响应窗口大小变化
-    window.addEventListener('resize', function() {
-        // 重新计算位置
-    });
-    </script>
-    '''
-    
-    st.markdown(carousel_html, unsafe_allow_html=True)
-
-# 处理照片操作
-    if 'delete' in st.query_params:
-        idx = int(st.query_params['delete'])
-        if idx < len(photos):
-            photos.pop(idx)
-            save_data(PHOTOS_FILE, photos)
-            del st.query_params['delete']
-            st.rerun()
-    
-    if 'replace' in st.query_params:
-        idx = int(st.query_params['replace'])
-        if idx < len(photos):
-            photos[idx]['url'] = f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}"
-            save_data(PHOTOS_FILE, photos)
-            del st.query_params['replace']
-            st.rerun()
-    
-    if 'add_photo' in st.query_params:
+    # 添加照片按钮
+    if st.button("➕ 添加新照片"):
         photos.append({
-            "url": f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}",
-            "caption": f"照片 {len(photos) + 1}"
+            "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200",
+            "caption": "新照片"
         })
         save_data(PHOTOS_FILE, photos)
-        del st.query_params['add_photo']
         st.rerun()
-    
+
     # 词云图
     st.markdown("---")
     st.header("💬 我俩关键词")
     
+    # ========== 词频字典（已包含20+词汇） ==========
     word_freq = {
-        "李昕垚": 20, "梅": 20, "垚": 20, "闺蜜": 16, "幸福": 16,
-        "快乐": 13, "美好": 13, "温暖": 12, "开心": 12, "欢笑": 11,
-        "永远": 11, "友情": 11, "温柔": 10, "勇敢": 10, "吃货": 9,
-        "最可爱": 9, "最爱": 9, "最善良": 9, "美丽动人": 8, "温馨": 8,
-        "闪闪发光": 7, "独一无二": 7, "姐妹情深": 7, "友谊万岁": 7,
-        "心心相印": 6, "形影不离": 6, "携手同行": 6, "梦想成真": 6
+        "李昕垚": 20,
+        "梅": 20,
+        "闺蜜": 16,
+        "幸福": 16,
+        "快乐": 13,
+        "美好": 13,
+        "温暖": 12,
+        "欢笑": 11,
+        "永远": 11,
+        "友情": 11,
+        "温柔": 10,
+        "勇敢": 10,
+        "吃货": 9,
+        "最可爱": 9,
+        "最爱": 9,
+        "最善良": 9,
+        "美丽动人": 8,
+        "温馨": 8,
+        "心中": 8,
+        "独": 8,
+        "冲": 7,
+        "本蛋": 7,
+        "开心": 12,
+        "走": 6,
+        "万": 5,
+        "快": 6,
+        "最": 8,
+        "美": 7,
+        "垚": 18,
+        "闪闪发光": 7,
+        "独一无二": 7,
+        "姐妹情深": 7,
+        "友谊万岁": 7,
+        "心心相印": 6,
+        "形影不离": 6,
+        "携手同行": 6,
+        "梦想成真": 6
     }
     
-    colors = [
-        '#E91E63', '#FF4081', '#F06292', '#9C27B0', '#BA68C8',
-        '#673AB7', '#5C6BC0', '#3F51B5', '#42A5F5', '#2196F3',
-        '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A',
-        '#FF9800', '#FFA726', '#FF5722', '#FF7043'
+    # ========== 中文字体（跨平台兼容） ==========
+    # 尝试多个平台的字体路径，找到可用的字体
+    font_path = None
+    import os
+    font_candidates = [
+        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",  # Linux 常用中文字体
+        "/usr/share/fonts/truetype/arphic/uming.ttc",     # Linux 宋体
+        "C:/Windows/Fonts/simhei.ttf",                    # Windows 黑体
+        "/System/Library/Fonts/PingFang.ttc",             # macOS 苹方
+        "/Library/Fonts/Songti.ttc",                      # macOS 宋体
     ]
     
-    wc = WordCloud(
-        font_path='C:/Windows/Fonts/simhei.ttf',
-        width=800, height=400,
-        background_color='white',
-        colormap='plasma',
-        random_state=42,
-        prefer_horizontal=0.9,
-        relative_scaling=0.5,
-        scale=2,
-        collocations=False,
-        contour_width=1,
-        contour_color='lightgray'
-    ).generate_from_frequencies(word_freq)
+    for candidate in font_candidates:
+        if os.path.exists(candidate):
+            font_path = candidate
+            break
     
-    plt.figure(figsize=(10, 5))
-    plt.imshow(wc, interpolation='bilinear')
-    plt.axis('off')
+    # ========== 优化参数：生成高质量词云 ==========
+    wc_params = {
+        "width": 1200,                   # 宽度（像素）
+        "height": 800,                   # 高度（像素）
+        "background_color": "white",     # 背景纯白
+        "max_words": 200,                # 最大词语数量
+        "colormap": "plasma",            # 颜色主题：plasma 渐变色
+        "random_state": 42,              # 固定颜色布局
+        "prefer_horizontal": 0.9,        # 横向词的比例（0~1）
+        "relative_scaling": 0.5,         # 频率对字号的影响程度（0~1）
+        "scale": 2,                      # 提高分辨率（原图放大2倍）
+        "collocations": False,           # 禁止重复词组，避免叠加
+        "stopwords": set(STOPWORDS),     # 去除常用无意义词
+        "contour_width": 1,              # 轮廓线宽度
+        "contour_color": "lightgray"     # 轮廓线颜色
+    }
+    
+    if font_path:
+        wc_params["font_path"] = font_path
+    
+    wc = WordCloud(**wc_params)
+    
+    # 从词频字典生成
+    wordcloud = wc.generate_from_frequencies(word_freq)
+    
+    # ========== 显示词云 ==========
+    plt.figure(figsize=(12, 8), dpi=100)
+    plt.imshow(wordcloud, interpolation="bilinear")  # 平滑显示
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.margins(0, 0)
     st.pyplot(plt)
 
 # 故事回顾

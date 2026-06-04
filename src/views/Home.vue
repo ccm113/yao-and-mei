@@ -27,19 +27,11 @@
 
       <main class="content">
         <section class="photo-section">
-          <h2 class="section-title">📷 垚＆槑 的精神小世界</h2>
-          <div class="ellipse-container" @mouseenter="stopAnimation" @mouseleave="startAnimation">
-            <div class="ellipse-track">
-              <div v-for="(photo, index) in photos" :key="index" 
-                   class="photo-item" 
-                   :style="photoStyles[index]">
-                <div class="photo-wrapper">
-                  <img :src="photo.url" :alt="photo.caption" />
-                </div>
-                <div class="photo-actions">
-                  <button @click="replacePhoto(index)" class="action-btn">替换</button>
-                  <button @click="deletePhoto(index)" class="action-btn delete">删除</button>
-                </div>
+          <h2 class="section-title">📷 感谢相机</h2>
+          <div class="simple-grid">
+            <div v-for="(photo, index) in photos" :key="index" class="photo-item">
+              <div class="photo-wrapper">
+                <img :src="photo.url" :alt="photo.caption" />
               </div>
             </div>
             <div class="add-photo" @click="addPhoto">
@@ -82,10 +74,6 @@ const photos = ref<Photo[]>([])
 const fileInput = ref<HTMLInputElement | null>(null)
 const hiddenFileInput = ref<HTMLInputElement | null>(null)
 const wordcloudCanvas = ref<HTMLCanvasElement | null>(null)
-const photoStyles = ref<Record<number, { transform: string; opacity: number; zIndex: number }>>({})
-
-let animationFrameId: number | null = null
-let animationAngle = 0
 
 const defaultPhotos: Photo[] = [
   { id: '1', url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200', caption: '相识的那天' },
@@ -142,47 +130,6 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-const animatePhotos = () => {
-  const total = photos.value.length
-  if (total === 0) return
-  
-  animationAngle += 0.01
-  
-  photos.value.forEach((_, index) => {
-    const baseAngle = (index / total) * Math.PI * 2
-    const angle = baseAngle + animationAngle
-    
-    const semiMajorAxis = 400
-    const semiMinorAxis = 150
-    
-    const x = Math.cos(angle) * semiMajorAxis
-    const y = Math.sin(angle) * semiMinorAxis
-    const scale = 0.6 + Math.sin(angle + Math.PI / 2) * 0.4
-    const opacity = 0.5 + Math.sin(angle + Math.PI / 2) * 0.5
-    const zIndex = Math.floor(100 + Math.sin(angle + Math.PI / 2) * 50)
-    
-    photoStyles.value[index] = {
-      transform: `translate(${x}px, ${y}px) scale(${scale})`,
-      opacity: opacity,
-      zIndex: zIndex
-    }
-  })
-  
-  animationFrameId = requestAnimationFrame(animatePhotos)
-}
-
-const startAnimation = () => {
-  if (animationFrameId) return
-  animatePhotos()
-}
-
-const stopAnimation = () => {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId)
-    animationFrameId = null
-  }
-}
-
 const addPhoto = () => {
   hiddenFileInput.value?.click()
 }
@@ -204,44 +151,6 @@ const handleFileSelect = (event: Event) => {
     }
     reader.readAsDataURL(file)
   }
-}
-
-const replacePhoto = (index: number) => {
-  hiddenFileInput.value?.click()
-  const originalLength = photos.value.length
-  const originalId = photos.value[index]?.id || Date.now().toString()
-  const handleReplace = (event: Event) => {
-    const target = event.target as HTMLInputElement
-    const file = target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (photos.value.length === originalLength) {
-          photos.value[index] = {
-            id: originalId,
-            url: e.target?.result as string,
-            caption: photos.value[index]?.caption
-          }
-          saveSharedPhotos()
-        }
-        target.value = ''
-      }
-      reader.readAsDataURL(file)
-    }
-    hiddenFileInput.value?.removeEventListener('change', handleReplace)
-  }
-  hiddenFileInput.value?.addEventListener('change', handleReplace)
-}
-
-const deletePhoto = (index: number) => {
-  const photoId = photos.value[index]?.id
-  if (photoId) {
-    const storeIndex = sharedStore.photos.findIndex(p => p.id === photoId)
-    if (storeIndex !== -1) {
-      sharedStore.photos.splice(storeIndex, 1)
-    }
-  }
-  photos.value.splice(index, 1)
 }
 
 const drawWordcloud = () => {
@@ -420,7 +329,6 @@ onMounted(() => {
     loadSharedPhotos()
     nextTick(() => {
       drawWordcloud()
-      startAnimation()
     })
   }, 4000)
 })
@@ -609,43 +517,24 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.ellipse-container {
-  position: relative;
-  width: 100%;
-  height: 500px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.ellipse-track {
-  position: absolute;
-  width: 800px;
-  height: 300px;
+.simple-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  justify-items: center;
 }
 
 .photo-item {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin-left: -140px;
-  margin-top: -105px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.photo-item:hover {
-  transform: scale(1.1) !important;
-  z-index: 1000 !important;
+  width: 100%;
+  max-width: 200px;
 }
 
 .photo-wrapper {
-  position: relative;
-  width: 280px;
-  height: 210px;
+  width: 100%;
+  height: 150px;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .photo-wrapper img {
@@ -654,63 +543,7 @@ onMounted(() => {
   object-fit: cover;
 }
 
-.photo-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 10px;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.photo-wrapper:hover .photo-overlay {
-  opacity: 1;
-}
-
-.photo-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.photo-item:hover .photo-actions {
-  opacity: 1;
-  visibility: visible;
-}
-
-.action-btn {
-  padding: 8px 16px;
-  background: #ff6b9d;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.action-btn:hover {
-  background: #c44569;
-}
-
-.action-btn.delete {
-  background: #ff6b6b;
-}
-
-.action-btn.delete:hover {
-  background: #ee5253;
-}
-
 .add-photo {
-  position: relative;
-  z-index: 100;
   width: 200px;
   height: 150px;
   border: 3px dashed #ff6b9d;
@@ -722,6 +555,7 @@ onMounted(() => {
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s;
+  background: rgba(255, 107, 157, 0.05);
 }
 
 .add-photo:hover {
