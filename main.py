@@ -242,19 +242,38 @@ def home_page():
         '#FF9800', '#FFA726', '#FF5722', '#FF7043'
     ]
     
-    wc = WordCloud(
-        font_path='C:/Windows/Fonts/simhei.ttf',
-        width=800, height=400,
-        background_color='white',
-        colormap='plasma',
-        random_state=42,
-        prefer_horizontal=0.9,
-        relative_scaling=0.5,
-        scale=2,
-        collocations=False,
-        contour_width=1,
-        contour_color='lightgray'
-    ).generate_from_frequencies(word_freq)
+    # 尝试多个平台的字体路径
+    font_path = None
+    font_candidates = [
+        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",  # Linux
+        "/usr/share/fonts/truetype/arphic/uming.ttc",     # Linux
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",  # Linux
+        "C:/Windows/Fonts/simhei.ttf",                    # Windows
+        "/System/Library/Fonts/PingFang.ttc",             # macOS
+    ]
+    
+    for candidate in font_candidates:
+        if os.path.exists(candidate):
+            font_path = candidate
+            break
+    
+    wc_params = {
+        "width": 800, "height": 400,
+        "background_color": "white",
+        "colormap": "plasma",
+        "random_state": 42,
+        "prefer_horizontal": 0.9,
+        "relative_scaling": 0.5,
+        "scale": 2,
+        "collocations": False,
+        "contour_width": 1,
+        "contour_color": "lightgray"
+    }
+    
+    if font_path:
+        wc_params["font_path"] = font_path
+    
+    wc = WordCloud(**wc_params).generate_from_frequencies(word_freq)
     
     plt.figure(figsize=(10, 5))
     plt.imshow(wc, interpolation='bilinear')
