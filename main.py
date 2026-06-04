@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import random
 import time
+import math
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -301,8 +302,8 @@ def home_page():
                 src="{photo['url']}" 
                 class="carousel-item" 
                 style="
-                    left: {50 + 45 * Math.cos(i * 72 * Math.PI / 180)}%;
-                    top: {50 + 35 * Math.sin(i * 72 * Math.PI / 180)}%;
+                    left: {50 + 45 * math.cos(i * 72 * math.pi / 180)}%;
+                    top: {50 + 35 * math.sin(i * 72 * math.pi / 180)}%;
                     transform: rotate({-i * 72}deg) translate(-50%, -50%);
                 "
                 onclick="showModal('{photo['url']}', {i})"
