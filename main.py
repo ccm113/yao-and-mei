@@ -171,66 +171,56 @@ def home_page():
     st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
-    # 椭圆轮播样式和脚本
-    carousel_html = f"""
+    # 生成椭圆轮播HTML
+    carousel_html = """
     <style>
-    .carousel-container {{
+    .carousel-container {
         width: 100%;
         height: 400px;
         position: relative;
         overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }}
+    }
     
-    .carousel-track {{
+    .carousel-item {
         position: absolute;
-        width: 600px;
-        height: 300px;
-        animation: rotate 20s linear infinite;
-    }}
-    
-    @keyframes rotate {{
-        from {{ transform: rotate(0deg); }}
-        to {{ transform: rotate(360deg); }}
-    }}
-    
-    .carousel-item {{
-        position: absolute;
-        width: 120px;
-        height: 120px;
+        width: 100px;
+        height: 100px;
         border-radius: 10px;
         cursor: pointer;
         transition: transform 0.3s, box-shadow 0.3s;
         object-fit: cover;
-    }}
+        z-index: 5;
+    }
     
-    .carousel-item:hover {{
-        transform: scale(1.1);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    }}
+    .carousel-item:hover {
+        transform: scale(1.15);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        z-index: 10;
+    }
     
-    .add-btn {{
+    .add-btn {
         position: absolute;
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         background: linear-gradient(135deg, #ff6b9d, #ff8e53);
         border: none;
         color: white;
-        font-size: 30px;
+        font-size: 28px;
         cursor: pointer;
         box-shadow: 0 5px 15px rgba(255,107,157,0.5);
         transition: transform 0.3s;
-        z-index: 10;
-    }}
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 20;
+    }
     
-    .add-btn:hover {{
-        transform: scale(1.1);
-    }}
+    .add-btn:hover {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
     
-    .modal {{
+    .modal {
         display: none;
         position: fixed;
         z-index: 100;
@@ -240,76 +230,60 @@ def home_page():
         height: 100%;
         overflow: auto;
         background-color: rgba(0,0,0,0.7);
-    }}
+    }
     
-    .modal-content {{
+    .modal-content {
         background-color: #fefefe;
-        margin: 15% auto;
+        margin: 10% auto;
         padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 600px;
         border-radius: 15px;
+        width: 80%;
+        max-width: 500px;
         text-align: center;
-    }}
+    }
     
-    .modal-content img {{
+    .modal-content img {
         max-width: 100%;
         max-height: 400px;
         border-radius: 10px;
-    }}
+    }
     
-    .modal-buttons {{
+    .modal-buttons {
         margin-top: 20px;
         display: flex;
         justify-content: center;
-        gap: 20px;
-    }}
+        gap: 15px;
+    }
     
-    .modal-btn {{
-        padding: 10px 30px;
+    .modal-btn {
+        padding: 10px 25px;
         border: none;
         border-radius: 25px;
         cursor: pointer;
-        font-size: 16px;
-    }}
+        font-size: 15px;
+    }
     
-    .delete-btn {{
+    .delete-btn {
         background-color: #ff4444;
         color: white;
-    }}
+    }
     
-    .replace-btn {{
+    .replace-btn {
         background-color: #4488ff;
         color: white;
-    }}
+    }
     
-    .close-btn {{
+    .close-btn {
         color: #aaa;
         float: right;
-        font-size: 28px;
+        font-size: 25px;
         font-weight: bold;
         cursor: pointer;
-    }}
+    }
     </style>
     
-    <div class="carousel-container">
-        <button class="add-btn" onclick="showAddPhoto()">+</button>
-        
-        <div class="carousel-track">
-            {''.join([f'''
-            <img 
-                src="{photo['url']}" 
-                class="carousel-item" 
-                style="
-                    left: {50 + 45 * math.cos(i * 72 * math.pi / 180)}%;
-                    top: {50 + 35 * math.sin(i * 72 * math.pi / 180)}%;
-                    transform: rotate({-i * 72}deg) translate(-50%, -50%);
-                "
-                onclick="showModal('{photo['url']}', {i})"
-            />
-            ''' for i, photo in enumerate(photos)])}
-        </div>
+    <div class="carousel-container" id="carouselContainer">
+        <button class="add-btn" onclick="window.location.href='?add_photo=true'">+</button>
     </div>
     
     <div id="photoModal" class="modal">
@@ -325,42 +299,79 @@ def home_page():
     
     <script>
     let currentIndex = -1;
+    let photos = %s;
+    let angle = 0;
+    let animationId;
     
-    function showModal(src, index) {{
+    function initCarousel() {
+        const container = document.getElementById('carouselContainer');
+        
+        photos.forEach((photo, index) => {
+            const img = document.createElement('img');
+            img.src = photo.url;
+            img.className = 'carousel-item';
+            img.onclick = () => showModal(photo.url, index);
+            container.appendChild(img);
+        });
+        
+        animate();
+    }
+    
+    function animate() {
+        const items = document.querySelectorAll('.carousel-item');
+        const centerX = 50;
+        const centerY = 50;
+        const radiusX = 35;
+        const radiusY = 20;
+        
+        items.forEach((item, index) => {
+            const itemAngle = angle + (index * 72 * Math.PI / 180);
+            const x = centerX + radiusX * Math.cos(itemAngle);
+            const y = centerY + radiusY * Math.sin(itemAngle);
+            
+            item.style.left = x + '%';
+            item.style.top = y + '%';
+            item.style.transform = 'translate(-50%, -50%)';
+        });
+        
+        angle += 0.01;
+        animationId = requestAnimationFrame(animate);
+    }
+    
+    function showModal(src, index) {
         currentIndex = index;
         document.getElementById('modalImage').src = src;
         document.getElementById('photoModal').style.display = 'block';
-    }}
+    }
     
-    function closeModal() {{
+    function closeModal() {
         document.getElementById('photoModal').style.display = 'none';
         currentIndex = -1;
-    }}
+    }
     
-    function deletePhoto() {{
-        if (currentIndex >= 0) {{
-            window.location.href = `?delete=${{currentIndex}}`;
-        }}
-    }}
+    function deletePhoto() {
+        if (currentIndex >= 0) {
+            window.location.href = '?delete=' + currentIndex;
+        }
+    }
     
-    function replacePhoto() {{
-        if (currentIndex >= 0) {{
-            window.location.href = `?replace=${{currentIndex}}`;
-        }}
-    }}
+    function replacePhoto() {
+        if (currentIndex >= 0) {
+            window.location.href = '?replace=' + currentIndex;
+        }
+    }
     
-    function showAddPhoto() {{
-        window.location.href = '?add_photo=true';
-    }}
-    
-    window.onclick = function(event) {{
+    window.onclick = function(event) {
         const modal = document.getElementById('photoModal');
-        if (event.target == modal) {{
+        if (event.target == modal) {
             closeModal();
-        }}
-    }}
+        }
+    };
+    
+    // 初始化
+    initCarousel();
     </script>
-    """
+    """ % photos
     
     st.markdown(carousel_html, unsafe_allow_html=True)
     
