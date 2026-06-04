@@ -4,7 +4,7 @@ import numpy as np
 import random
 import time
 import math
-from wordcloud import WordCloud, STOPWORDS
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from PIL import Image
 import json
@@ -26,7 +26,7 @@ def init_files():
             json.dump([
                 {"url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200", "caption": "相识的那天"},
                 {"url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", "caption": "第一次约会"},
-                {"url": "https://images.unsplash.com/photo-152220176988-66273c2fd55f?w=200", "caption": "一起看日落"},
+                {"url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=200", "caption": "一起看日落"},
                 {"url": "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=200", "caption": "海边漫步"}
             ], f)
     
@@ -180,6 +180,7 @@ def home_page():
     if 'splash_shown' not in st.session_state:
         st.session_state['splash_shown'] = True
         show_heart_animation()
+    
 
     
     # 照片展示
@@ -193,22 +194,20 @@ def home_page():
         for i, photo in enumerate(photos):
             with cols[i % 4]:
                 rotation = photo.get('rotation', 0)
-                # 使用CSS旋转照片
                 st.markdown(f"""
                 <div style="transform: rotate({rotation}deg); margin: 10px;">
                     <img src="{photo['url']}" style="width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);" />
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 旋转控制按钮
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button(f"↻ 左旋 {i}", key=f"left_{i}"):
+                    if st.button(f"↻ 左旋", key=f"left_{i}"):
                         photos[i]['rotation'] = (rotation - 90) % 360
                         save_data(PHOTOS_FILE, photos)
                         st.rerun()
                 with col2:
-                    if st.button(f"↺ 右旋 {i}", key=f"right_{i}"):
+                    if st.button(f"↺ 右旋", key=f"right_{i}"):
                         photos[i]['rotation'] = (rotation + 90) % 360
                         save_data(PHOTOS_FILE, photos)
                         st.rerun()
@@ -227,96 +226,39 @@ def home_page():
     st.markdown("---")
     st.header("💬 我俩关键词")
     
-    # ========== 词频字典（已包含20+词汇） ==========
     word_freq = {
-        "李昕垚": 20,
-        "梅": 20,
-        "闺蜜": 16,
-        "幸福": 16,
-        "快乐": 13,
-        "美好": 13,
-        "温暖": 12,
-        "欢笑": 11,
-        "永远": 11,
-        "友情": 11,
-        "温柔": 10,
-        "勇敢": 10,
-        "吃货": 9,
-        "最可爱": 9,
-        "最爱": 9,
-        "最善良": 9,
-        "美丽动人": 8,
-        "温馨": 8,
-        "心中": 8,
-        "独": 8,
-        "冲": 7,
-        "本蛋": 7,
-        "开心": 12,
-        "走": 6,
-        "万": 5,
-        "快": 6,
-        "最": 8,
-        "美": 7,
-        "垚": 18,
-        "闪闪发光": 7,
-        "独一无二": 7,
-        "姐妹情深": 7,
-        "友谊万岁": 7,
-        "心心相印": 6,
-        "形影不离": 6,
-        "携手同行": 6,
-        "梦想成真": 6
+        "李昕垚": 20, "梅": 20, "垚": 20, "闺蜜": 16, "幸福": 16,
+        "快乐": 13, "美好": 13, "温暖": 12, "开心": 12, "欢笑": 11,
+        "永远": 11, "友情": 11, "温柔": 10, "勇敢": 10, "吃货": 9,
+        "最可爱": 9, "最爱": 9, "最善良": 9, "美丽动人": 8, "温馨": 8,
+        "闪闪发光": 7, "独一无二": 7, "姐妹情深": 7, "友谊万岁": 7,
+        "心心相印": 6, "形影不离": 6, "携手同行": 6, "梦想成真": 6
     }
     
-    # ========== 中文字体（跨平台兼容） ==========
-    # 尝试多个平台的字体路径，找到可用的字体
-    font_path = None
-    import os
-    font_candidates = [
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",  # Linux 常用中文字体
-        "/usr/share/fonts/truetype/arphic/uming.ttc",     # Linux 宋体
-        "C:/Windows/Fonts/simhei.ttf",                    # Windows 黑体
-        "/System/Library/Fonts/PingFang.ttc",             # macOS 苹方
-        "/Library/Fonts/Songti.ttc",                      # macOS 宋体
+    colors = [
+        '#E91E63', '#FF4081', '#F06292', '#9C27B0', '#BA68C8',
+        '#673AB7', '#5C6BC0', '#3F51B5', '#42A5F5', '#2196F3',
+        '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A',
+        '#FF9800', '#FFA726', '#FF5722', '#FF7043'
     ]
     
-    for candidate in font_candidates:
-        if os.path.exists(candidate):
-            font_path = candidate
-            break
+    wc = WordCloud(
+        font_path='C:/Windows/Fonts/simhei.ttf',
+        width=800, height=400,
+        background_color='white',
+        colormap='plasma',
+        random_state=42,
+        prefer_horizontal=0.9,
+        relative_scaling=0.5,
+        scale=2,
+        collocations=False,
+        contour_width=1,
+        contour_color='lightgray'
+    ).generate_from_frequencies(word_freq)
     
-    # ========== 优化参数：生成高质量词云 ==========
-    wc_params = {
-        "width": 1200,                   # 宽度（像素）
-        "height": 800,                   # 高度（像素）
-        "background_color": "white",     # 背景纯白
-        "max_words": 200,                # 最大词语数量
-        "colormap": "plasma",            # 颜色主题：plasma 渐变色
-        "random_state": 42,              # 固定颜色布局
-        "prefer_horizontal": 0.9,        # 横向词的比例（0~1）
-        "relative_scaling": 0.5,         # 频率对字号的影响程度（0~1）
-        "scale": 2,                      # 提高分辨率（原图放大2倍）
-        "collocations": False,           # 禁止重复词组，避免叠加
-        "stopwords": set(STOPWORDS),     # 去除常用无意义词
-        "contour_width": 1,              # 轮廓线宽度
-        "contour_color": "lightgray"     # 轮廓线颜色
-    }
-    
-    if font_path:
-        wc_params["font_path"] = font_path
-    
-    wc = WordCloud(**wc_params)
-    
-    # 从词频字典生成
-    wordcloud = wc.generate_from_frequencies(word_freq)
-    
-    # ========== 显示词云 ==========
-    plt.figure(figsize=(12, 8), dpi=100)
-    plt.imshow(wordcloud, interpolation="bilinear")  # 平滑显示
-    plt.axis("off")
-    plt.tight_layout(pad=0)
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.margins(0, 0)
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wc, interpolation='bilinear')
+    plt.axis('off')
     st.pyplot(plt)
 
 # 故事回顾
