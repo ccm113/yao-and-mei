@@ -167,25 +167,228 @@ def home_page():
     
     # 照片展示
     st.markdown("---")
-    st.header("📷 美好回忆")
+    st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
-    cols = st.columns(4)
-    for i, photo in enumerate(photos):
-        with cols[i % 4]:
-            st.image(photo['url'], caption=photo['caption'], use_column_width=True)
+    # 椭圆轮播样式和脚本
+    carousel_html = f"""
+    <style>
+    .carousel-container {{
+        width: 100%;
+        height: 400px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
     
-    # 添加照片
-    st.markdown("---")
-    st.header("➕ 添加照片")
-    new_caption = st.text_input("照片描述")
-    if st.button("添加示例照片"):
+    .carousel-track {{
+        position: absolute;
+        width: 600px;
+        height: 300px;
+        animation: rotate 20s linear infinite;
+    }}
+    
+    @keyframes rotate {{
+        from {{ transform: rotate(0deg); }}
+        to {{ transform: rotate(360deg); }}
+    }}
+    
+    .carousel-item {{
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        object-fit: cover;
+    }}
+    
+    .carousel-item:hover {{
+        transform: scale(1.1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }}
+    
+    .add-btn {{
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b9d, #ff8e53);
+        border: none;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(255,107,157,0.5);
+        transition: transform 0.3s;
+        z-index: 10;
+    }}
+    
+    .add-btn:hover {{
+        transform: scale(1.1);
+    }}
+    
+    .modal {{
+        display: none;
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.7);
+    }}
+    
+    .modal-content {{
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 15px;
+        text-align: center;
+    }}
+    
+    .modal-content img {{
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 10px;
+    }}
+    
+    .modal-buttons {{
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }}
+    
+    .modal-btn {{
+        padding: 10px 30px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+    }}
+    
+    .delete-btn {{
+        background-color: #ff4444;
+        color: white;
+    }}
+    
+    .replace-btn {{
+        background-color: #4488ff;
+        color: white;
+    }}
+    
+    .close-btn {{
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }}
+    </style>
+    
+    <div class="carousel-container">
+        <button class="add-btn" onclick="showAddPhoto()">+</button>
+        
+        <div class="carousel-track">
+            {''.join([f'''
+            <img 
+                src="{photo['url']}" 
+                class="carousel-item" 
+                style="
+                    left: {50 + 45 * Math.cos(i * 72 * Math.PI / 180)}%;
+                    top: {50 + 35 * Math.sin(i * 72 * Math.PI / 180)}%;
+                    transform: rotate({-i * 72}deg) translate(-50%, -50%);
+                "
+                onclick="showModal('{photo['url']}', {i})"
+            />
+            ''' for i, photo in enumerate(photos)])}
+        </div>
+    </div>
+    
+    <div id="photoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" />
+            <div class="modal-buttons">
+                <button class="modal-btn delete-btn" onclick="deletePhoto()">删除</button>
+                <button class="modal-btn replace-btn" onclick="replacePhoto()">替换</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let currentIndex = -1;
+    
+    function showModal(src, index) {{
+        currentIndex = index;
+        document.getElementById('modalImage').src = src;
+        document.getElementById('photoModal').style.display = 'block';
+    }}
+    
+    function closeModal() {{
+        document.getElementById('photoModal').style.display = 'none';
+        currentIndex = -1;
+    }}
+    
+    function deletePhoto() {{
+        if (currentIndex >= 0) {{
+            window.location.href = `?delete=${{currentIndex}}`;
+        }}
+    }}
+    
+    function replacePhoto() {{
+        if (currentIndex >= 0) {{
+            window.location.href = `?replace=${{currentIndex}}`;
+        }}
+    }}
+    
+    function showAddPhoto() {{
+        window.location.href = '?add_photo=true';
+    }}
+    
+    window.onclick = function(event) {{
+        const modal = document.getElementById('photoModal');
+        if (event.target == modal) {{
+            closeModal();
+        }}
+    }}
+    </script>
+    """
+    
+    st.markdown(carousel_html, unsafe_allow_html=True)
+    
+    # 处理照片操作
+    query_params = st.experimental_get_query_params()
+    
+    if 'delete' in query_params:
+        idx = int(query_params['delete'][0])
+        if idx < len(photos):
+            photos.pop(idx)
+            save_data(PHOTOS_FILE, photos)
+            st.experimental_set_query_params()
+            st.rerun()
+    
+    if 'replace' in query_params:
+        idx = int(query_params['replace'][0])
+        if idx < len(photos):
+            photos[idx]['url'] = f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}"
+            save_data(PHOTOS_FILE, photos)
+            st.experimental_set_query_params()
+            st.rerun()
+    
+    if 'add_photo' in query_params:
         photos.append({
             "url": f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}",
-            "caption": new_caption if new_caption else f"照片 {len(photos) + 1}"
+            "caption": f"照片 {len(photos) + 1}"
         })
         save_data(PHOTOS_FILE, photos)
-        st.success("照片添加成功！")
+        st.experimental_set_query_params()
         st.rerun()
     
     # 词云图
