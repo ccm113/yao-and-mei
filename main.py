@@ -166,218 +166,28 @@ def home_page():
     
 
     
-    # 照片展示
+        # 照片展示
     st.markdown("---")
     st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
-    # 生成椭圆轮播HTML
-    import json
-    photos_json = json.dumps(photos)
-    carousel_html = f"""
-    <style>
-    .carousel-container {
-        width: 100%;
-        height: 400px;
-        position: relative;
-        overflow: hidden;
-    }
+    # 使用简单的网格布局
+    if photos:
+        cols = st.columns(4)
+        for i, photo in enumerate(photos):
+            with cols[i % 4]:
+                st.image(photo['url'], use_column_width=True)
     
-    .carousel-item {
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: transform 0.3s, box-shadow 0.3s;
-        object-fit: cover;
-        z-index: 5;
-    }
-    
-    .carousel-item:hover {
-        transform: scale(1.15);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        z-index: 10;
-    }
-    
-    .add-btn {
-        position: absolute;
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ff6b9d, #ff8e53);
-        border: none;
-        color: white;
-        font-size: 28px;
-        cursor: pointer;
-        box-shadow: 0 5px 15px rgba(255,107,157,0.5);
-        transition: transform 0.3s;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 20;
-    }
-    
-    .add-btn:hover {
-        transform: translate(-50%, -50%) scale(1.1);
-    }
-    
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 100;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.7);
-    }
-    
-    .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 15px;
-        width: 80%;
-        max-width: 500px;
-        text-align: center;
-    }
-    
-    .modal-content img {
-        max-width: 100%;
-        max-height: 400px;
-        border-radius: 10px;
-    }
-    
-    .modal-buttons {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-    }
-    
-    .modal-btn {
-        padding: 10px 25px;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        font-size: 15px;
-    }
-    
-    .delete-btn {
-        background-color: #ff4444;
-        color: white;
-    }
-    
-    .replace-btn {
-        background-color: #4488ff;
-        color: white;
-    }
-    
-    .close-btn {
-        color: #aaa;
-        float: right;
-        font-size: 25px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    </style>
-    
-    <div class="carousel-container" id="carouselContainer">
-        <button class="add-btn" onclick="window.location.href='?add_photo=true'">+</button>
-    </div>
-    
-    <div id="photoModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modalImage" src="" />
-            <div class="modal-buttons">
-                <button class="modal-btn delete-btn" onclick="deletePhoto()">删除</button>
-                <button class="modal-btn replace-btn" onclick="replacePhoto()">替换</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    let currentIndex = -1;
-    let photos = {photos_json};
-    let angle = 0;
-    let animationId;
-    
-    function initCarousel() {
-        const container = document.getElementById('carouselContainer');
-        
-        photos.forEach((photo, index) => {
-            const img = document.createElement('img');
-            img.src = photo.url;
-            img.className = 'carousel-item';
-            img.onclick = () => showModal(photo.url, index);
-            container.appendChild(img);
-        });
-        
-        animate();
-    }
-    
-    function animate() {
-        const items = document.querySelectorAll('.carousel-item');
-        const centerX = 50;
-        const centerY = 50;
-        const radiusX = 35;
-        const radiusY = 20;
-        
-        items.forEach((item, index) => {
-            const itemAngle = angle + (index * 72 * Math.PI / 180);
-            const x = centerX + radiusX * Math.cos(itemAngle);
-            const y = centerY + radiusY * Math.sin(itemAngle);
-            
-            item.style.left = x + '%';
-            item.style.top = y + '%';
-            item.style.transform = 'translate(-50%, -50%)';
-        });
-        
-        angle += 0.01;
-        animationId = requestAnimationFrame(animate);
-    }
-    
-    function showModal(src, index) {
-        currentIndex = index;
-        document.getElementById('modalImage').src = src;
-        document.getElementById('photoModal').style.display = 'block';
-    }
-    
-    function closeModal() {
-        document.getElementById('photoModal').style.display = 'none';
-        currentIndex = -1;
-    }
-    
-    function deletePhoto() {
-        if (currentIndex >= 0) {
-            window.location.href = '?delete=' + currentIndex;
-        }
-    }
-    
-    function replacePhoto() {
-        if (currentIndex >= 0) {
-            window.location.href = '?replace=' + currentIndex;
-        }
-    }
-    
-    window.onclick = function(event) {
-        const modal = document.getElementById('photoModal');
-        if (event.target == modal) {
-            closeModal();
-        }
-    };
-    
-    // 初始化
-    initCarousel();
-    </script>
-    """
-    
-    st.markdown(carousel_html, unsafe_allow_html=True)
-    
-    # 处理照片操作
+    # 添加照片按钮
+    if st.button("➕ 添加新照片"):
+        photos.append({
+            "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200",
+            "caption": "新照片"
+        })
+        save_data(PHOTOS_FILE, photos)
+        st.rerun()
+
+# 处理照片操作
     query_params = st.experimental_get_query_params()
     
     if 'delete' in query_params:
