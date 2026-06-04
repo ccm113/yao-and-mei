@@ -118,14 +118,14 @@ def login_page():
                 st.session_state['username'] = username
                 st.success("登录成功！")
                 time.sleep(1)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("用户名或密码错误")
     
     with col2:
         if st.button("注册"):
             st.session_state['page'] = 'register'
-            st.experimental_rerun()
+            st.rerun()
 
 # 注册页面
 def register_page():
@@ -150,11 +150,11 @@ def register_page():
                 st.success("注册成功！")
                 time.sleep(1)
                 st.session_state['page'] = 'login'
-                st.experimental_rerun()
+                st.rerun()
     
     if st.button("返回登录"):
         st.session_state['page'] = 'login'
-        st.experimental_rerun()
+        st.rerun()
 
 # 首页
 def home_page():
@@ -187,7 +187,7 @@ def home_page():
         })
         save_data(PHOTOS_FILE, photos)
         st.success("照片添加成功！")
-        st.experimental_rerun()
+        st.rerun()
     
     # 词云图
     st.markdown("---")
@@ -294,14 +294,14 @@ def game_page():
             
             if st.session_state['current_q'] < len(questions) - 1:
                 st.session_state['current_q'] += 1
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.markdown(f"---")
                 st.write(f"🎉 游戏结束！你的得分：{st.session_state['score']}/{len(questions)}")
                 if st.button("再玩一次"):
                     st.session_state['current_q'] = 0
                     st.session_state['score'] = 0
-                    st.experimental_rerun()
+                    st.rerun()
     
     elif game_type == "成语接龙":
         st.subheader("📝 成语接龙")
@@ -320,7 +320,7 @@ def game_page():
             if first_char == last_char:
                 st.success("✅ 接龙成功！")
                 st.session_state['current_idiom'] = next_idiom
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error(f"❌ 开头字不对！应该以 '{last_char}' 开头")
     
@@ -410,7 +410,7 @@ def wishlist_page():
             wishlist.append({"name": selected, "emoji": dest['emoji'], "added_at": time.strftime("%Y-%m-%d")})
             save_data(WISHLIST_FILE, wishlist)
             st.success("添加成功！")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.warning("已经在心愿清单中了")
     
@@ -426,7 +426,7 @@ def wishlist_page():
                 if st.button(f"删除", key=f"del_{item['name']}"):
                     wishlist = [w for w in wishlist if w['name'] != item['name']]
                     save_data(WISHLIST_FILE, wishlist)
-                    st.experimental_rerun()
+                    st.rerun()
 
 # 主函数
 def main():
@@ -451,7 +451,7 @@ def main():
         st.session_state['logged_in'] = False
         st.session_state['username'] = ''
         st.session_state['splash_shown'] = False
-        st.experimental_rerun()
+        st.rerun()
     
     if menu == "首页":
         home_page()
