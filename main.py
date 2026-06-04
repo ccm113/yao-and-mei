@@ -343,7 +343,15 @@ def game_page():
         ]
         
         if st.button("🎯 真心话"):
-            st.write(f"**真心话问题：** {random.choice(truths)}")
+            st.session_state['truth_question'] = random.choice(truths)
+        
+        if 'truth_question' in st.session_state:
+            st.write(f"**真心话问题：** {st.session_state['truth_question']}")
+            answer = st.text_area("写下你的答案：", height=100)
+            if st.button("保存答案"):
+                if answer:
+                    st.success("答案已保存！")
+                    st.session_state['truth_answer'] = answer
         
         if st.button("🎲 大冒险"):
             st.write(f"**大冒险任务：** {random.choice(dares)}")
