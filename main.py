@@ -54,12 +54,14 @@ def check_login():
         return True
     
     # 如果 session_state 中没有，检查 URL 查询参数
-    query_params = st.experimental_get_query_params()
-    if 'logged_in' in query_params and query_params['logged_in'][0] == 'true':
-        if 'username' in query_params:
+    try:
+        # 尝试使用新版本 API
+        if st.query_params.get('logged_in') == 'true' and 'username' in st.query_params:
             st.session_state['logged_in'] = True
-            st.session_state['username'] = query_params['username'][0]
+            st.session_state['username'] = st.query_params['username']
             return True
+    except:
+        pass
     
     return False
 
@@ -130,7 +132,8 @@ def login_page():
                 st.session_state['logged_in'] = True
                 st.session_state['username'] = username
                 # 设置URL查询参数，刷新时保持登录状态
-                st.experimental_set_query_params(logged_in='true', username=username)
+                st.query_params['logged_in'] = 'true'
+                st.query_params['username'] = username
                 st.success("登录成功！")
                 time.sleep(1)
                 st.rerun()
@@ -447,31 +450,29 @@ def home_page():
     st.markdown(carousel_html, unsafe_allow_html=True)
 
 # 处理照片操作
-    query_params = st.experimental_get_query_params()
-    
-    if 'delete' in query_params:
-        idx = int(query_params['delete'][0])
+    if 'delete' in st.query_params:
+        idx = int(st.query_params['delete'])
         if idx < len(photos):
             photos.pop(idx)
             save_data(PHOTOS_FILE, photos)
-            st.experimental_set_query_params()
+            del st.query_params['delete']
             st.rerun()
     
-    if 'replace' in query_params:
-        idx = int(query_params['replace'][0])
+    if 'replace' in st.query_params:
+        idx = int(st.query_params['replace'])
         if idx < len(photos):
             photos[idx]['url'] = f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}"
             save_data(PHOTOS_FILE, photos)
-            st.experimental_set_query_params()
+            del st.query_params['replace']
             st.rerun()
     
-    if 'add_photo' in query_params:
+    if 'add_photo' in st.query_params:
         photos.append({
             "url": f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={random.randint(1, 1000)}",
             "caption": f"照片 {len(photos) + 1}"
         })
         save_data(PHOTOS_FILE, photos)
-        st.experimental_set_query_params()
+        del st.query_params['add_photo']
         st.rerun()
     
     # 词云图
@@ -745,7 +746,7 @@ def main():
         st.session_state['username'] = ''
         st.session_state['splash_shown'] = False
         # 清除URL查询参数
-        st.experimental_set_query_params()
+        st.query_params.clear()
         st.rerun()
     
     if menu == "首页":
