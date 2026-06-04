@@ -172,7 +172,9 @@ def home_page():
     photos = load_data(PHOTOS_FILE)
     
     # 生成椭圆轮播HTML
-    carousel_html = """
+    import json
+    photos_json = json.dumps(photos)
+    carousel_html = f"""
     <style>
     .carousel-container {
         width: 100%;
@@ -299,7 +301,7 @@ def home_page():
     
     <script>
     let currentIndex = -1;
-    let photos = %s;
+    let photos = {photos_json};
     let angle = 0;
     let animationId;
     
@@ -371,7 +373,7 @@ def home_page():
     // 初始化
     initCarousel();
     </script>
-    """ % photos
+    """
     
     st.markdown(carousel_html, unsafe_allow_html=True)
     
