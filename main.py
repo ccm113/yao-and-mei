@@ -49,7 +49,19 @@ def save_data(filepath, data):
 
 # 登录检查
 def check_login():
-    return st.session_state.get('logged_in', False)
+    # 首先检查 session_state
+    if st.session_state.get('logged_in', False):
+        return True
+    
+    # 如果 session_state 中没有，检查 URL 查询参数
+    query_params = st.experimental_get_query_params()
+    if 'logged_in' in query_params and query_params['logged_in'][0] == 'true':
+        if 'username' in query_params:
+            st.session_state['logged_in'] = True
+            st.session_state['username'] = query_params['username'][0]
+            return True
+    
+    return False
 
 # 爱心绽放动画
 def show_heart_animation():
@@ -117,6 +129,8 @@ def login_page():
             if user:
                 st.session_state['logged_in'] = True
                 st.session_state['username'] = username
+                # 设置URL查询参数，刷新时保持登录状态
+                st.experimental_set_query_params(logged_in='true', username=username)
                 st.success("登录成功！")
                 time.sleep(1)
                 st.rerun()
@@ -730,6 +744,8 @@ def main():
         st.session_state['logged_in'] = False
         st.session_state['username'] = ''
         st.session_state['splash_shown'] = False
+        # 清除URL查询参数
+        st.experimental_set_query_params()
         st.rerun()
     
     if menu == "首页":
