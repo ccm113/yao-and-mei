@@ -166,26 +166,271 @@ def home_page():
     
 
     
-        # 照片展示
+    # 照片展示
     st.markdown("---")
     st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
-    # 使用简单的网格布局
-    if photos:
-        cols = st.columns(4)
-        for i, photo in enumerate(photos):
-            with cols[i % 4]:
-                st.image(photo['url'], use_column_width=True)
+    # 生成椭圆轮播HTML
+    import json
+    photos_json = json.dumps(photos).replace('"', '\\"')
     
-    # 添加照片按钮
-    if st.button("➕ 添加新照片"):
-        photos.append({
-            "url": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200",
-            "caption": "新照片"
-        })
-        save_data(PHOTOS_FILE, photos)
-        st.rerun()
+    carousel_html = '''
+    <style>
+    .carousel-container {
+        width: 100%;
+        height: 450px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .carousel-item {
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        object-fit: cover;
+        z-index: 5;
+        border: 3px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .carousel-item:hover {
+        transform: scale(1.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        z-index: 20;
+    }
+    
+    .add-btn {
+        position: absolute;
+        width: 75px;
+        height: 75px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b9d, #ff8e53);
+        border: 4px solid white;
+        color: white;
+        font-size: 32px;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(255,107,157,0.5);
+        transition: transform 0.3s, box-shadow 0.3s;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .add-btn:hover {
+        transform: scale(1.15);
+        box-shadow: 0 12px 35px rgba(255,107,157,0.7);
+    }
+    
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+        background-color: #ffffff;
+        margin: 8% auto;
+        padding: 25px;
+        border-radius: 20px;
+        width: 85%;
+        max-width: 550px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .modal-content img {
+        max-width: 100%;
+        max-height: 450px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .modal-btn {
+        padding: 12px 35px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .modal-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .delete-btn {
+        background: linear-gradient(135deg, #ff4757, #ff6b81);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255,71,87,0.4);
+    }
+    
+    .replace-btn {
+        background: linear-gradient(135deg, #3742fa, #5352ed);
+        color: white;
+        box-shadow: 0 4px 15px rgba(55,66,250,0.4);
+    }
+    
+    .close-btn {
+        color: #999;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .close-btn:hover {
+        color: #333;
+    }
+    </style>
+    
+    <div class="carousel-container" id="carouselContainer">
+        <button class="add-btn" onclick="window.location.href='?add_photo=true'">+</button>
+    </div>
+    
+    <div id="photoModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" />
+            <div class="modal-buttons">
+                <button class="modal-btn delete-btn" onclick="deletePhoto()">删除</button>
+                <button class="modal-btn replace-btn" onclick="replacePhoto()">替换</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let currentIndex = -1;
+    let photos = JSON.parse('''' + photos_json + '''');
+    let angle = 0;
+    let animationId;
+    
+    function initCarousel() {
+        const container = document.getElementById('carouselContainer');
+        
+        photos.forEach(function(photo, index) {
+            const img = document.createElement('img');
+            img.src = photo.url;
+            img.className = 'carousel-item';
+            img.setAttribute('data-index', index);
+            img.onclick = function() { 
+                showModal(photo.url, index); 
+            };
+            container.appendChild(img);
+        });
+        
+        animate();
+    }
+    
+    function animate() {
+        const items = document.querySelectorAll('.carousel-item');
+        const container = document.getElementById('carouselContainer');
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+        
+        const centerX = containerWidth / 2;
+        const centerY = containerHeight / 2;
+        const radiusX = containerWidth * 0.32;
+        const radiusY = containerHeight * 0.22;
+        
+        items.forEach(function(item, index) {
+            const itemAngle = angle + (index * (360 / items.length) * Math.PI / 180);
+            const x = centerX - 55 + radiusX * Math.cos(itemAngle);
+            const y = centerY - 55 + radiusY * Math.sin(itemAngle);
+            
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+            item.style.transform = 'translate(0, 0)';
+            
+            // 根据位置调整大小和透明度
+            const visibility = (Math.cos(itemAngle) + 1) / 2;
+            const scale = 0.75 + visibility * 0.25;
+            item.style.transform = 'scale(' + scale + ')';
+            item.style.opacity = 0.6 + visibility * 0.4;
+            item.style.zIndex = Math.floor(visibility * 10) + 5;
+        });
+        
+        angle += 0.008;
+        animationId = requestAnimationFrame(animate);
+    }
+    
+    function showModal(src, index) {
+        currentIndex = index;
+        document.getElementById('modalImage').src = src;
+        document.getElementById('photoModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal() {
+        document.getElementById('photoModal').style.display = 'none';
+        currentIndex = -1;
+        document.body.style.overflow = 'auto';
+    }
+    
+    function deletePhoto() {
+        if (currentIndex >= 0) {
+            window.location.href = '?delete=' + currentIndex;
+        }
+    }
+    
+    function replacePhoto() {
+        if (currentIndex >= 0) {
+            window.location.href = '?replace=' + currentIndex;
+        }
+    }
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('photoModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    };
+    
+    // 初始化
+    initCarousel();
+    
+    // 响应窗口大小变化
+    window.addEventListener('resize', function() {
+        // 重新计算位置
+    });
+    </script>
+    '''
+    
+    st.markdown(carousel_html, unsafe_allow_html=True)
 
 # 处理照片操作
     query_params = st.experimental_get_query_params()
