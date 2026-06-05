@@ -98,6 +98,14 @@ def save_data(filepath, data):
 # 初始化
 init_files()
 
+# 初始化用户ID
+if 'user_id' not in st.session_state:
+    import hashlib
+    import time
+    # 生成唯一用户ID
+    user_id = hashlib.md5(f"{time.time()}{random.random()}".encode()).hexdigest()[:8]
+    st.session_state.user_id = user_id
+
 # 页面配置
 st.set_page_config(
     page_title="垚＆槑",
@@ -245,6 +253,7 @@ def qna_page():
                 # 添加答案到数据
                 qna_data[st.session_state.random_q_index]['answers'].append({
                     "user": username,
+                    "user_id": st.session_state.get('user_id', '未知ID'),
                     "answer": answer.strip(),
                     "timestamp": st.session_state.get('login_time', '未知时间')
                 })
@@ -269,7 +278,7 @@ def qna_page():
             with st.expander(f"问题 {i}：{item['question']}"):
                 if item['answers']:
                     for j, ans in enumerate(item['answers'], 1):
-                        st.markdown(f"**{j}. {ans['user']}**")
+                        st.markdown(f"**{j}. {ans['user']}** (ID: {ans.get('user_id', '未知ID')})")
                         st.markdown(f"> {ans['answer']}")
                         st.markdown(f"*回答时间：{ans.get('timestamp', '未知')}*")
                         st.markdown("---")
