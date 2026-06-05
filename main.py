@@ -8,6 +8,7 @@ import random
 USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
 QNA_FILE = "qna.json"
+PORTRAIT_FILE = "portrait.json"
 
 # 将本地图片转换为 Base64
 def image_to_base64(img_path):
@@ -80,6 +81,40 @@ def init_files():
         ]
         with open(QNA_FILE, 'w', encoding='utf-8') as f:
             json.dump(default_qna, f, ensure_ascii=False)
+    
+    # 初始化画像描述数据
+    if not os.path.exists(PORTRAIT_FILE):
+        default_portrait = {
+            "yao": [
+                "🍲 爱吃火锅",
+                "💪 健身达人",
+                "🏸 羽毛球健将",
+                "💥 肌肉美女",
+                "💃 舞担",
+                "👗 喜欢漂亮的礼裙",
+                "🐔 不喜欢吃鸡肉",
+                "🍜 不爱吃螺蛳粉",
+                "🥛 不爱喝牛奶",
+                "😇 性格好惹但不准惹",
+                "🤗 喜欢照顾别人"
+            ],
+            "mei": [
+                "😎 有个性",
+                "👖 喜欢酷酷的衣服",
+                "🍕 爱吃一切美食",
+                "🥛 不爱喝纯牛奶",
+                "🍗 爱吃鸡公煲",
+                "🏸 羽毛球菜但爱打",
+                "💭 想健身但不行动",
+                "💭 想跳舞但不行动",
+                "🏊 最近喜欢游泳",
+                "😠 别惹我！",
+                "🪵 粗糙",
+                "😅 自己都照顾不好"
+            ]
+        }
+        with open(PORTRAIT_FILE, 'w', encoding='utf-8') as f:
+            json.dump(default_portrait, f, ensure_ascii=False)
 
 def load_data(filepath):
     if os.path.exists(filepath):
@@ -286,6 +321,9 @@ def portrait_page():
     st.title("👩‍🦰 个人画像")
     st.markdown("### 了解我们")
     
+    # 加载画像数据
+    portrait_data = load_data(PORTRAIT_FILE)
+    
     # 两个按钮
     col1, col2 = st.columns(2)
     with col1:
@@ -299,53 +337,71 @@ def portrait_page():
     if st.session_state.get('selected_portrait') == 'yao':
         st.subheader("👸 气质美女 - 李昕垚")
         
-        # 使用Streamlit原生组件展示
-        st.markdown("""
+        # 生成气泡HTML
+        bubbles_html = ""
+        for desc in portrait_data.get('yao', []):
+            bubbles_html += f'<span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">{desc}</span>'
+        
+        st.markdown(f"""
         <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-radius: 16px; padding: 30px; margin-top: 10px;">
             <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                 <div style="width: 150px; height: 150px; background: linear-gradient(135deg, #f472b6, #fb7185); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 70px; box-shadow: 0 8px 25px rgba(244, 114, 182, 0.3); border: 4px solid white;">👸</div>
             </div>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🍲 爱吃火锅</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">💪 健身达人</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🏸 羽毛球健将</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">💥 肌肉美女</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">� 舞担</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">👗 喜欢漂亮的礼裙</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🐔 不喜欢吃鸡肉</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🍜 不爱吃螺蛳粉</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🥛 不爱喝牛奶</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">😇 性格好惹但不准惹</span>
-                <span style="background: white; color: #be185d; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🤗 喜欢照顾别人</span>
+                {bubbles_html}
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # 添加描述按钮
+        st.markdown("---")
+        new_desc = st.text_input("添加新描述：", placeholder="输入对垚的描述...")
+        if st.button("➕ 增加描述"):
+            if new_desc.strip():
+                # 添加表情前缀
+                emojis = ["💕", "💖", "✨", "🌟", "💝", "🎀", "💎", "🌸"]
+                emoji = random.choice(emojis)
+                new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
+                
+                portrait_data['yao'].append(new_desc_with_emoji)
+                save_data(PORTRAIT_FILE, portrait_data)
+                st.success("描述已添加！")
+                st.rerun()
     
     # 梅的画像
     elif st.session_state.get('selected_portrait') == 'mei':
-        st.subheader("🤸 活泼美女 - 陈昌梅")
+        st.subheader("� 活泼美女 - 陈昌梅")
         
-        st.markdown("""
+        # 生成气泡HTML
+        bubbles_html = ""
+        for desc in portrait_data.get('mei', []):
+            bubbles_html += f'<span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">{desc}</span>'
+        
+        st.markdown(f"""
         <div style="background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); border-radius: 16px; padding: 30px; margin-top: 10px;">
             <div style="display: flex; justify-content: center; margin-bottom: 20px;">
                 <div style="width: 150px; height: 150px; background: linear-gradient(135deg, #fbbf24, #f97316); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 70px; box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3); border: 4px solid white;">🤸</div>
             </div>
             <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">😎 有个性</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">� 喜欢酷酷的衣服</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🍕 爱吃一切美食</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🥛 不爱喝纯牛奶</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🍗 爱吃鸡公煲</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🏸 羽毛球菜但爱打</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">💭 想健身但不行动</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">💭 想跳舞但不行动</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🏊 最近喜欢游泳</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">😠 别惹我！</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">🪵 粗糙</span>
-                <span style="background: white; color: #d97706; padding: 10px 20px; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">😅 自己都照顾不好</span>
+                {bubbles_html}
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # 添加描述按钮
+        st.markdown("---")
+        new_desc = st.text_input("添加新描述：", placeholder="输入对梅的描述...")
+        if st.button("➕ 增加描述"):
+            if new_desc.strip():
+                # 添加表情前缀
+                emojis = ["💕", "💖", "✨", "🌟", "💝", "🎀", "💎", "�"]
+                emoji = random.choice(emojis)
+                new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
+                
+                portrait_data['mei'].append(new_desc_with_emoji)
+                save_data(PORTRAIT_FILE, portrait_data)
+                st.success("描述已添加！")
+                st.rerun()
 
 # 主程序
 menu = sidebar()
