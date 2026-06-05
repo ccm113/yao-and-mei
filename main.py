@@ -1,11 +1,20 @@
 import streamlit as st
 import json
 import os
+import base64
 
 # 数据文件路径
 USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
 WISHLIST_FILE = "wishlist.json"
+
+# 将本地图片转换为 Base64
+def image_to_base64(img_path):
+    try:
+        with open(img_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except:
+        return None
 
 # 初始化数据文件
 def init_files():
@@ -75,9 +84,20 @@ def home_page():
     st.header("📷 感谢相机")
     photos = load_data(PHOTOS_FILE)
     
+    # 将本地图片转换为 Base64
+    processed_photos = []
+    for photo in photos:
+        url = photo["url"]
+        # 如果是本地路径，转换为 Base64
+        if os.path.exists(url):
+            base64_str = image_to_base64(url)
+            if base64_str:
+                url = f"data:image/jpeg;base64,{base64_str}"
+        processed_photos.append({"url": url, "caption": photo["caption"]})
+    
     # 生成椭圆轮播HTML
     import json as json_module
-    photos_json = json_module.dumps(photos).replace('"', '\\"')
+    photos_json = json_module.dumps(processed_photos).replace('"', '\\"')
     
     carousel_html = f'''
     <style>
