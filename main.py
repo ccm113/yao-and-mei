@@ -11,11 +11,26 @@ QNA_FILE = "qna.json"
 PORTRAIT_FILE = "portrait.json"
 
 # 将本地图片转换为 Base64
+@st.cache_data(ttl=3600)
 def image_to_base64(img_path):
     try:
-        with open(img_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    except:
+        from PIL import Image
+        import io
+        
+        # 打开并压缩图片
+        with Image.open(img_path) as img:
+            # 缩小图片尺寸
+            max_size = 300
+            width, height = img.size
+            if max(width, height) > max_size:
+                ratio = max_size / max(width, height)
+                img = img.resize((int(width * ratio), int(height * ratio)), Image.Resampling.LANCZOS)
+            
+            # 转换为JPEG格式并压缩
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=70)
+            return base64.b64encode(buffer.getvalue()).decode()
+    except Exception as e:
         return None
 
 # 初始化数据文件
@@ -160,20 +175,29 @@ def home_page():
     # 照片展示
     st.markdown("---")
     st.header("📷 时光照相机")
-    photos = load_data(PHOTOS_FILE)
     
-    # 使用 Streamlit 原生组件展示照片网格
-    cols = st.columns(4)
-    for i, photo in enumerate(photos):
-        col = cols[i % 4]
-        # 处理图片路径
-        url = photo["url"]
-        if os.path.exists(url):
-            base64_str = image_to_base64(url)
-            if base64_str:
-                url = f"data:image/jpeg;base64,{base64_str}"
-        with col:
-            st.image(url, caption=photo["caption"], width=150)
+    # 使用加载状态
+    with st.spinner("正在加载照片..."):
+        photos = load_data(PHOTOS_FILE)
+        
+        # 预加载所有图片
+        photo_urls = []
+        for photo in photos:
+            url = photo["url"]
+            if os.path.exists(url):
+                base64_str = image_to_base64(url)
+                if base64_str:
+                    url = f"data:image/jpeg;base64,{base64_str}"
+            photo_urls.append({"url": url, "caption": photo["caption"]})
+        
+        # 使用 Streamlit 原生组件展示照片网格
+        num_cols = min(4, len(photos)) if photos else 4
+        cols = st.columns(num_cols)
+        
+        for i, photo in enumerate(photo_urls):
+            col = cols[i % num_cols]
+            with col:
+                st.image(photo["url"], caption=photo["caption"], width=150, use_column_width=True)
     
     # 添加照片按钮
     if st.button("➕ 添加新照片"):
