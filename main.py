@@ -217,28 +217,68 @@ def home_page():
                     # 检查是否选中了当前照片
                     is_selected = st.session_state.selected_photo == i
                     
-                    # 点击照片切换选中状态
-                    if st.button("", key=f"photo_{i}", help="点击查看详情", 
-                                use_container_width=True, 
-                                disabled=is_selected):
-                        if st.session_state.selected_photo == i:
-                            st.session_state.selected_photo = None
-                        else:
-                            st.session_state.selected_photo = i
-                    
-                    # 显示图片（使用HTML实现悬浮按钮效果）
+                    # 显示图片（使用CSS hover实现悬停按钮效果）
                     st.markdown(f"""
-                    <div style="position: relative; display: inline-block; width: 100%;">
-                        <img src="{photo['url']}" style="width: 100%; border-radius: 8px; cursor: pointer;" />
-                        {'<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px;">'
-                         '<button style="padding: 5px 15px; background: rgba(255,255,255,0.9); border: none; border-radius: 15px; cursor: pointer; font-weight: bold; color: #be185d; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">详情</button>'
-                         '<button style="padding: 5px 15px; background: rgba(239,68,68,0.9); border: none; border-radius: 15px; cursor: pointer; font-weight: bold; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">删除</button>'
-                         '</div>' if is_selected else ''}
+                    <style>
+                    .photo-container {{
+                        position: relative;
+                        display: inline-block;
+                        width: 100%;
+                    }}
+                    .photo-container img {{
+                        width: 100%;
+                        border-radius: 8px;
+                        cursor: pointer;
+                    }}
+                    .photo-container .photo-overlay {{
+                        position: absolute;
+                        bottom: 10px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        display: none;
+                        gap: 10px;
+                    }}
+                    .photo-container:hover .photo-overlay,
+                    .photo-container.selected .photo-overlay {{
+                        display: flex;
+                    }}
+                    .photo-btn {{
+                        padding: 6px 16px;
+                        border: none;
+                        border-radius: 15px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                        transition: transform 0.2s;
+                    }}
+                    .photo-btn:hover {{
+                        transform: scale(1.05);
+                    }}
+                    .btn-detail {{
+                        background: rgba(255,255,255,0.95);
+                        color: #be185d;
+                    }}
+                    .btn-delete {{
+                        background: rgba(239,68,68,0.95);
+                        color: white;
+                    }}
+                    </style>
+                    <div class="photo-container {'selected' if is_selected else ''}">
+                        <img src="{photo['url']}" />
+                        <div class="photo-overlay">
+                            <button class="photo-btn btn-detail" onclick="document.getElementById('btn-detail-{i}').click()">详情</button>
+                            <button class="photo-btn btn-delete" onclick="document.getElementById('btn-delete-{i}').click()">删除</button>
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # 删除按钮逻辑
-                    if is_selected and st.button(f"确认删除 {i+1}", key=f"delete_{i}", use_container_width=True):
+                    # 隐藏的详情按钮
+                    if st.button("", key=f"btn-detail-{i}", style={"display": "none"}):
+                        st.session_state.selected_photo = i if st.session_state.selected_photo != i else None
+                        st.rerun()
+                    
+                    # 隐藏的删除按钮
+                    if st.button("", key=f"btn-delete-{i}", style={"display": "none"}):
                         del photos[i]
                         save_data(PHOTOS_FILE, photos)
                         st.session_state.selected_photo = None
