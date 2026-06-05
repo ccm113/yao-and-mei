@@ -9,6 +9,7 @@ USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
 QNA_FILE = "qna.json"
 PORTRAIT_FILE = "portrait.json"
+SECRET_FILE = "secrets.json"
 
 # 将本地图片转换为 Base64
 @st.cache_data(ttl=3600)
@@ -133,6 +134,11 @@ def init_files():
         }
         with open(PORTRAIT_FILE, 'w', encoding='utf-8') as f:
             json.dump(default_portrait, f, ensure_ascii=False)
+    
+    # 初始化悄悄话数据
+    if not os.path.exists(SECRET_FILE):
+        with open(SECRET_FILE, 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False)
 
 def load_data(filepath):
     if os.path.exists(filepath):
@@ -167,7 +173,7 @@ st.set_page_config(
 def sidebar():
     with st.sidebar:
         st.title("💕 导航")
-        menu = st.radio("选择页面", ["首页", "见信如面", "真心话问答", "个人画像"])
+        menu = st.radio("选择页面", ["首页", "见信如面", "真心话问答", "个人画像", "悄悄话"])
         return menu
 
 # 首页
@@ -521,6 +527,94 @@ def portrait_page():
                 st.rerun()
 
 # 主程序
+# 悄悄话
+def secret_page():
+    st.title("💌 悄悄话")
+    
+    # 导览文字
+    st.markdown("""
+    **我想让你知道但不好直说的事情，悄悄留了个言，看你什么时候发现。**
+    """)
+    
+    # 状态管理
+    if 'secret_view_mode' not in st.session_state:
+        st.session_state.secret_view_mode = 'write'  # 'write' 或 'view_all'
+    if 'editing_index' not in st.session_state:
+        st.session_state.editing_index = None
+    
+    # 写悄悄话模式
+    if st.session_state.secret_view_mode == 'write':
+        # 输入框
+        secret_text = st.text_area("写下你的悄悄话：", height=100, placeholder="想说但不好意思当面说的话...")
+        
+        # 发送按钮
+        if st.button("✉️ 发送悄悄话"):
+            if secret_text.strip():
+                secrets = load_data(SECRET_FILE)
+                secrets.append({
+                    "id": len(secrets) + 1,
+                    "content": secret_text.strip(),
+                    "user": st.session_state.get('username', '匿名用户'),
+                    "user_id": st.session_state.get('user_id', '未知ID'),
+                    "timestamp": st.session_state.get('login_time', '未知时间')
+                })
+                save_data(SECRET_FILE, secrets)
+                st.success("悄悄话已发送！")
+        
+        # 查看所有悄悄话按钮
+        if st.button("📋 查看所有悄悄话"):
+            st.session_state.secret_view_mode = 'view_all'
+            st.rerun()
+    
+    # 查看所有悄悄话模式
+    else:
+        st.subheader("📚 所有悄悄话")
+        
+        secrets = load_data(SECRET_FILE)
+        
+        if secrets:
+            for i, secret in enumerate(secrets):
+                with st.expander(f"悄悄话 {secret['id']} · {secret['user']}"):
+                    # 编辑模式
+                    if st.session_state.editing_index == i:
+                        new_content = st.text_area("修改内容：", value=secret['content'], height=100)
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button(f"✅ 保存修改 {i}", key=f"save_{i}"):
+                                secrets[i]['content'] = new_content.strip()
+                                save_data(SECRET_FILE, secrets)
+                                st.session_state.editing_index = None
+                                st.success("修改已保存！")
+                                st.rerun()
+                        with col2:
+                            if st.button(f"❌ 取消 {i}", key=f"cancel_{i}"):
+                                st.session_state.editing_index = None
+                                st.rerun()
+                    else:
+                        st.markdown(f"> {secret['content']}")
+                        st.markdown(f"*发送者：{secret['user']} · {secret.get('timestamp', '未知时间')}*")
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button(f"✏️ 修改 {i}", key=f"edit_{i}"):
+                                st.session_state.editing_index = i
+                                st.rerun()
+                        with col2:
+                            if st.button(f"🗑️ 删除 {i}", key=f"delete_secret_{i}"):
+                                del secrets[i]
+                                save_data(SECRET_FILE, secrets)
+                                st.success("悄悄话已删除！")
+                                st.rerun()
+        else:
+            st.markdown("暂无悄悄话")
+        
+        # 返回按钮
+        if st.button("🔙 返回写悄悄话"):
+            st.session_state.secret_view_mode = 'write'
+            st.session_state.editing_index = None
+            st.rerun()
+
+
 menu = sidebar()
 
 if menu == "首页":
@@ -531,3 +625,5 @@ elif menu == "真心话问答":
     qna_page()
 elif menu == "个人画像":
     portrait_page()
+elif menu == "悄悄话":
+    secret_page()
