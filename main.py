@@ -537,7 +537,7 @@ menu = sidebar()
 
 if menu == "首页":
     home_page()
-elif menu == "故事回顾":
+elif menu == "见信如面":
     story_page()
 elif menu == "真心话问答":
     qna_page()
