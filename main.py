@@ -179,10 +179,11 @@ def home_page():
     st.markdown("---")
     st.header("📷 时光照相机")
     
+    # 加载照片数据（放在外部以便上传时访问）
+    photos = load_data(PHOTOS_FILE)
+    
     # 使用加载状态
     with st.spinner("正在加载照片..."):
-        photos = load_data(PHOTOS_FILE)
-        
         # 预加载所有图片
         photo_urls = []
         for photo in photos:
@@ -206,9 +207,6 @@ def home_page():
     st.markdown("---")
     uploaded_file = st.file_uploader("🖼️ 添加图片", type=["jpg", "jpeg", "png", "gif"])
     if uploaded_file is not None:
-        # 保存上传的图片
-        import os
-        
         # 创建上传目录
         upload_dir = "uploads"
         if not os.path.exists(upload_dir):
