@@ -193,22 +193,44 @@ def home_page():
                     url = f"data:image/jpeg;base64,{base64_str}"
             photo_urls.append({"url": url, "caption": photo["caption"]})
         
-        # 使用 Streamlit 原生组件展示照片网格
+        # 使用 Streamlit 原生组件展示照片网格（不带标题）
         num_cols = min(4, len(photos)) if photos else 4
         cols = st.columns(num_cols)
         
         for i, photo in enumerate(photo_urls):
             col = cols[i % num_cols]
             with col:
-                st.image(photo["url"], caption=photo["caption"], width=150, use_column_width=True)
+                st.image(photo["url"], width=150, use_column_width=True)
     
-    # 添加照片按钮
-    if st.button("➕ 添加新照片"):
+    # 本地图片上传功能
+    st.markdown("---")
+    uploaded_file = st.file_uploader("🖼️ 添加图片", type=["jpg", "jpeg", "png", "gif"])
+    if uploaded_file is not None:
+        # 保存上传的图片
+        import os
+        
+        # 创建上传目录
+        upload_dir = "uploads"
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # 生成唯一文件名
+        import uuid
+        file_extension = uploaded_file.name.split('.')[-1]
+        file_name = f"{uuid.uuid4().hex}.{file_extension}"
+        file_path = os.path.join(upload_dir, file_name)
+        
+        # 保存文件
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        
+        # 添加到照片列表
         photos.append({
-            "url": f"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200&random={os.urandom(4).hex()}",
-            "caption": f"新照片 {len(photos) + 1}"
+            "url": file_path,
+            "caption": f"照片 {len(photos) + 1}"
         })
         save_data(PHOTOS_FILE, photos)
+        st.success("图片上传成功！")
         st.rerun()
     
     # 关键词展示
