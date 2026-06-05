@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import base64
+import urllib.request
 
 # 数据文件路径
 USERS_FILE = "users.json"
@@ -257,8 +258,11 @@ def home_page():
             "携手同行": 6, "梦想成真": 6
         }
         
-        # 尝试多个平台的字体路径
+        # 下载中文字体到临时文件（解决Streamlit Cloud无中文字体问题）
         font_path = None
+        font_temp_path = "temp_font.ttf"
+        
+        # 首先检查本地是否有字体
         font_candidates = [
             "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
             "/usr/share/fonts/truetype/arphic/uming.ttc",
@@ -271,6 +275,16 @@ def home_page():
             if os.path.exists(candidate):
                 font_path = candidate
                 break
+        
+        # 如果本地没有字体，从网络下载
+        if not font_path:
+            try:
+                font_url = "https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/SimplifiedChinese/SourceHanSansSC-Regular.otf"
+                urllib.request.urlretrieve(font_url, font_temp_path)
+                if os.path.exists(font_temp_path):
+                    font_path = font_temp_path
+            except:
+                pass
         
         # 创建词云图
         wc_params = {
@@ -301,6 +315,10 @@ def home_page():
         plt.axis("off")
         plt.tight_layout(pad=0)
         st.pyplot(plt)
+        
+        # 清理临时字体文件
+        if os.path.exists(font_temp_path):
+            os.remove(font_temp_path)
     
     except Exception as e:
         st.error(f"词云图生成失败: {str(e)}")
