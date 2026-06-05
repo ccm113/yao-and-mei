@@ -8,6 +8,7 @@ import random
 USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
 WISHLIST_FILE = "wishlist.json"
+QNA_FILE = "qna.json"
 
 # 将本地图片转换为 Base64
 def image_to_base64(img_path):
@@ -52,6 +53,38 @@ def init_files():
     if not os.path.exists(WISHLIST_FILE):
         with open(WISHLIST_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f)
+    
+    # 初始化真心话数据
+    if not os.path.exists(QNA_FILE):
+        default_qna = [
+            {"question": "你最喜欢对方的哪一点？", "answers": []},
+            {"question": "你们第一次见面的场景还记得吗？", "answers": []},
+            {"question": "如果只能用三个词形容对方，你会选什么？", "answers": []},
+            {"question": "对方做过最让你感动的事是什么？", "answers": []},
+            {"question": "你们之间有什么特别的小秘密吗？", "answers": []},
+            {"question": "如果有机会一起旅行，你想去哪里？", "answers": []},
+            {"question": "对方的缺点是什么？", "answers": []},
+            {"question": "你们认识多久了？感觉时间过得快吗？", "answers": []},
+            {"question": "如果对方遇到困难，你会怎么帮助她？", "answers": []},
+            {"question": "你希望十年后你们的关系是什么样的？", "answers": []},
+            {"question": "对方最吸引你的地方是什么？", "answers": []},
+            {"question": "你们之间发生过最有趣的事是什么？", "answers": []},
+            {"question": "如果对方突然消失一天，你会怎么办？", "answers": []},
+            {"question": "你觉得对方最大的优点是什么？", "answers": []},
+            {"question": "你们有什么共同的梦想吗？", "answers": []},
+            {"question": "对方做过让你生气的事吗？后来怎么解决的？", "answers": []},
+            {"question": "如果用一首歌形容你们的友谊，你会选哪首？", "answers": []},
+            {"question": "你最想和对方一起做但还没做的事是什么？", "answers": []},
+            {"question": "对方说过最让你暖心的话是什么？", "answers": []},
+            {"question": "如果可以交换一天人生，你愿意和对方交换吗？", "answers": []},
+            {"question": "你觉得你们的友谊能维持一辈子吗？", "answers": []},
+            {"question": "对方的什么习惯让你觉得很可爱？", "answers": []},
+            {"question": "你们之间有没有吵过架？最后怎么和好的？", "answers": []},
+            {"question": "如果对方谈恋爱了，你会有什么感觉？", "answers": []},
+            {"question": "你最想从对方身上学到什么品质？", "answers": []}
+        ]
+        with open(QNA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(default_qna, f, ensure_ascii=False)
 
 def load_data(filepath):
     if os.path.exists(filepath):
@@ -230,40 +263,72 @@ def qna_page():
     st.title("💬 真心话问答")
     st.markdown("### 加深彼此的了解")
     
-    questions = [
-        "你最喜欢对方的哪一点？",
-        "你们第一次见面的场景还记得吗？",
-        "如果只能用三个词形容对方，你会选什么？",
-        "对方做过最让你感动的事是什么？",
-        "你们之间有什么特别的小秘密吗？",
-        "如果有机会一起旅行，你想去哪里？",
-        "对方的缺点是什么？",
-        "你们认识多久了？感觉时间过得快吗？",
-        "如果对方遇到困难，你会怎么帮助她？",
-        "你希望十年后你们的关系是什么样的？"
-    ]
+    # 加载真心话数据
+    qna_data = load_data(QNA_FILE)
     
-    if 'current_q' not in st.session_state:
-        st.session_state.current_q = 0
+    # 状态管理
+    if 'qna_view_mode' not in st.session_state:
+        st.session_state.qna_view_mode = 'quiz'  # 'quiz' 或 'view_all'
     
-    st.markdown(f"**问题 {st.session_state.current_q + 1}/{len(questions)}**")
-    st.markdown(f"### {questions[st.session_state.current_q]}")
-    
-    # 答案输入
-    answer = st.text_area("你的回答：", height=100)
-    if st.button("💾 保存答案"):
-        st.success("答案已保存！")
-    
-    # 导航按钮
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.session_state.current_q > 0 and st.button("⬅️ 上一题"):
-            st.session_state.current_q -= 1
+    # 切换按钮
+    if st.session_state.qna_view_mode == 'quiz':
+        if st.button("📋 查看所有真心话"):
+            st.session_state.qna_view_mode = 'view_all'
             st.rerun()
-    with col2:
-        if st.session_state.current_q < len(questions) - 1 and st.button("下一题 ➡️"):
-            st.session_state.current_q += 1
+    else:
+        if st.button("🔙 返回答题"):
+            st.session_state.qna_view_mode = 'quiz'
             st.rerun()
+    
+    # 答题模式
+    if st.session_state.qna_view_mode == 'quiz':
+        # 随机选择一个题目（每次进入可能不同）
+        if 'random_q_index' not in st.session_state:
+            st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
+        
+        current_q = qna_data[st.session_state.random_q_index]
+        
+        st.markdown(f"### 🎯 {current_q['question']}")
+        
+        # 答案输入
+        answer = st.text_area("你的回答：", height=100)
+        username = st.session_state.get('username', '匿名用户')
+        
+        if st.button("💾 保存答案"):
+            if answer.strip():
+                # 添加答案到数据
+                qna_data[st.session_state.random_q_index]['answers'].append({
+                    "user": username,
+                    "answer": answer.strip(),
+                    "timestamp": st.session_state.get('login_time', '未知时间')
+                })
+                save_data(QNA_FILE, qna_data)
+                st.success("答案已保存！")
+                # 随机下一题
+                st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
+                st.rerun()
+            else:
+                st.warning("请先输入回答内容")
+        
+        # 换一题按钮
+        if st.button("🔄 换一题"):
+            st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
+            st.rerun()
+    
+    # 查看所有真心话模式
+    else:
+        st.subheader("📚 所有真心话题目和答案")
+        
+        for i, item in enumerate(qna_data, 1):
+            with st.expander(f"问题 {i}：{item['question']}"):
+                if item['answers']:
+                    for j, ans in enumerate(item['answers'], 1):
+                        st.markdown(f"**{j}. {ans['user']}**")
+                        st.markdown(f"> {ans['answer']}")
+                        st.markdown(f"*回答时间：{ans.get('timestamp', '未知')}*")
+                        st.markdown("---")
+                else:
+                    st.markdown("暂无回答")
 
 # 心愿清单
 def wishlist_page():
