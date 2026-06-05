@@ -49,10 +49,6 @@ def init_files():
         with open(PHOTOS_FILE, 'w', encoding='utf-8') as f:
             json.dump(local_photos, f, ensure_ascii=False)
     
-    if not os.path.exists(WISHLIST_FILE):
-        with open(WISHLIST_FILE, 'w', encoding='utf-8') as f:
-            json.dump([], f)
-    
     # 初始化真心话数据
     if not os.path.exists(QNA_FILE):
         default_qna = [
