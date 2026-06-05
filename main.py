@@ -22,16 +22,16 @@ def image_to_base64(img_path):
             # 修复EXIF方向问题
             img = ImageOps.exif_transpose(img)
             
-            # 缩小图片尺寸
-            max_size = 300
+            # 缩小图片尺寸（增大限制以提高清晰度）
+            max_size = 600
             width, height = img.size
             if max(width, height) > max_size:
                 ratio = max_size / max(width, height)
                 img = img.resize((int(width * ratio), int(height * ratio)), Image.Resampling.LANCZOS)
             
-            # 转换为JPEG格式并压缩
+            # 转换为JPEG格式并压缩（提高质量）
             buffer = io.BytesIO()
-            img.save(buffer, format='JPEG', quality=70)
+            img.save(buffer, format='JPEG', quality=90)
             return base64.b64encode(buffer.getvalue()).decode()
     except Exception as e:
         return None
