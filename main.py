@@ -14,11 +14,14 @@ PORTRAIT_FILE = "portrait.json"
 @st.cache_data(ttl=3600)
 def image_to_base64(img_path):
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
         import io
         
-        # 打开并压缩图片
+        # 打开图片
         with Image.open(img_path) as img:
+            # 修复EXIF方向问题
+            img = ImageOps.exif_transpose(img)
+            
             # 缩小图片尺寸
             max_size = 300
             width, height = img.size
