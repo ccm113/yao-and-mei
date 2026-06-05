@@ -342,77 +342,137 @@ def portrait_page():
     # 显示画像（气泡围绕美女形象四周）
     if st.session_state.selected_portrait == 'yao':
         st.markdown("""
-        <div style="position: relative; padding: 40px; background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%); border-radius: 20px; margin-top: 20px;">
-            <!-- 上方气泡 -->
-            <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃火锅</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 健身达人</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 羽毛球健将</span>
+        <style>
+        .yao-bubble {
+            background: white;
+            color: #ec4899;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: inline-block;
+            margin: 5px;
+        }
+        .yao-card {
+            background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 20px;
+            position: relative;
+            min-height: 400px;
+        }
+        .yao-center {
+            text-align: center;
+            padding-top: 80px;
+        }
+        .yao-avatar {
+            width: 220px;
+            height: 320px;
+            background: linear-gradient(135deg, #ff6b9d, #ff8e53);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+        }
+        </style>
+        <div class="yao-card">
+            <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);">
+                <span class="yao-bubble">💬 爱吃火锅</span>
+                <span class="yao-bubble">💬 健身达人</span>
+                <span class="yao-bubble">💬 羽毛球健将</span>
             </div>
-            
-            <!-- 左侧气泡 -->
-            <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 肌肉美女</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 舞担</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢漂亮的礼裙</span>
+            <div style="position:absolute;left:20px;top:50%;transform:translateY(-50%);">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <span class="yao-bubble">💬 肌肉美女</span>
+                    <span class="yao-bubble">💬 舞担</span>
+                    <span class="yao-bubble">💬 喜欢漂亮的礼裙</span>
+                </div>
             </div>
-            
-            <!-- 中间美女形象 -->
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 220px; height: 320px; background: linear-gradient(135deg, #ff6b9d, #ff8e53); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);">👗</div>
-                <h3 style="color: #ec4899; margin-top: 20px;">气质美女 - 李昕垚</h3>
+            <div class="yao-center">
+                <div class="yao-avatar">👗</div>
+                <h3 style="color:#ec4899;margin-top:20px;">气质美女 - 李昕垚</h3>
             </div>
-            
-            <!-- 右侧气泡 -->
-            <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不喜欢吃鸡肉</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱吃螺蛳粉</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱喝牛奶</span>
+            <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <span class="yao-bubble">💬 不喜欢吃鸡肉</span>
+                    <span class="yao-bubble">💬 不爱吃螺蛳粉</span>
+                    <span class="yao-bubble">💬 不爱喝牛奶</span>
+                </div>
             </div>
-            
-            <!-- 下方气泡 -->
-            <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 性格好惹但不准惹</span>
-                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢照顾别人</span>
+            <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);">
+                <span class="yao-bubble">💬 性格好惹但不准惹</span>
+                <span class="yao-bubble">💬 喜欢照顾别人</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
     
     elif st.session_state.selected_portrait == 'mei':
         st.markdown("""
-        <div style="position: relative; padding: 40px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 20px; margin-top: 20px;">
-            <!-- 上方气泡 -->
-            <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 有个性</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢酷酷的衣服</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃一切美食</span>
+        <style>
+        .mei-bubble {
+            background: white;
+            color: #f59e0b;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: inline-block;
+            margin: 5px;
+        }
+        .mei-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 20px;
+            position: relative;
+            min-height: 400px;
+        }
+        .mei-center {
+            text-align: center;
+            padding-top: 80px;
+        }
+        .mei-avatar {
+            width: 220px;
+            height: 320px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        }
+        </style>
+        <div class="mei-card">
+            <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);">
+                <span class="mei-bubble">💬 有个性</span>
+                <span class="mei-bubble">💬 喜欢酷酷的衣服</span>
+                <span class="mei-bubble">💬 爱吃一切美食</span>
             </div>
-            
-            <!-- 左侧气泡 -->
-            <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱喝纯牛奶</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃鸡公煲</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 羽毛球菜但爱打</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 想健身但不行动</span>
+            <div style="position:absolute;left:20px;top:50%;transform:translateY(-50%);">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <span class="mei-bubble">💬 不爱喝纯牛奶</span>
+                    <span class="mei-bubble">💬 爱吃鸡公煲</span>
+                    <span class="mei-bubble">💬 羽毛球菜但爱打</span>
+                    <span class="mei-bubble">💬 想健身但不行动</span>
+                </div>
             </div>
-            
-            <!-- 中间美女形象 -->
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <div style="width: 220px; height: 320px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);">🔥</div>
-                <h3 style="color: #f59e0b; margin-top: 20px;">活泼美女 - 陈昌梅</h3>
+            <div class="mei-center">
+                <div class="mei-avatar">🔥</div>
+                <h3 style="color:#f59e0b;margin-top:20px;">活泼美女 - 陈昌梅</h3>
             </div>
-            
-            <!-- 右侧气泡 -->
-            <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 想跳舞但不行动</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 最近喜欢游泳</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 别惹我！</span>
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 粗糙</span>
+            <div style="position:absolute;right:20px;top:50%;transform:translateY(-50%);">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <span class="mei-bubble">💬 想跳舞但不行动</span>
+                    <span class="mei-bubble">💬 最近喜欢游泳</span>
+                    <span class="mei-bubble">💬 别惹我！</span>
+                    <span class="mei-bubble">💬 粗糙</span>
+                </div>
             </div>
-            
-            <!-- 下方气泡 -->
-            <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
-                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 自己都照顾不好</span>
+            <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);">
+                <span class="mei-bubble">💬 自己都照顾不好</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
