@@ -206,30 +206,44 @@ def home_page():
     # 本地图片上传功能
     st.markdown("---")
     uploaded_file = st.file_uploader("🖼️ 添加图片", type=["jpg", "jpeg", "png", "gif"])
+    
     if uploaded_file is not None:
-        # 创建上传目录
-        upload_dir = "uploads"
-        if not os.path.exists(upload_dir):
-            os.makedirs(upload_dir)
+        # 使用 session_state 防止重复上传
+        if 'uploaded_file_id' not in st.session_state:
+            st.session_state.uploaded_file_id = None
         
-        # 生成唯一文件名
-        import uuid
-        file_extension = uploaded_file.name.split('.')[-1]
-        file_name = f"{uuid.uuid4().hex}.{file_extension}"
-        file_path = os.path.join(upload_dir, file_name)
+        # 生成文件唯一标识（基于文件名和文件大小）
+        file_identifier = f"{uploaded_file.name}_{uploaded_file.size}"
         
-        # 保存文件
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        
-        # 添加到照片列表
-        photos.append({
-            "url": file_path,
-            "caption": f"照片 {len(photos) + 1}"
-        })
-        save_data(PHOTOS_FILE, photos)
-        st.success("图片上传成功！")
-        st.rerun()
+        # 检查是否已经处理过这个文件
+        if st.session_state.uploaded_file_id != file_identifier:
+            # 创建上传目录
+            upload_dir = "uploads"
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
+            
+            # 生成唯一文件名
+            import uuid
+            file_extension = uploaded_file.name.split('.')[-1]
+            file_name = f"{uuid.uuid4().hex}.{file_extension}"
+            file_path = os.path.join(upload_dir, file_name)
+            
+            # 保存文件
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            
+            # 添加到照片列表
+            photos.append({
+                "url": file_path,
+                "caption": f"照片 {len(photos) + 1}"
+            })
+            save_data(PHOTOS_FILE, photos)
+            
+            # 更新 session_state 标记已处理
+            st.session_state.uploaded_file_id = file_identifier
+            
+            st.success("图片上传成功！")
+            st.rerun()
     
     # 关键词展示
     st.markdown("---")
