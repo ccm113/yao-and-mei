@@ -272,13 +272,15 @@ def home_page():
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # 隐藏的详情按钮
-                    if st.button("", key=f"btn-detail-{i}", style={"display": "none"}):
+                    # 隐藏的详情按钮（使用空按钮）
+                    detail_clicked = st.button(" ", key=f"btn-detail-{i}", help="详情")
+                    if detail_clicked:
                         st.session_state.selected_photo = i if st.session_state.selected_photo != i else None
                         st.rerun()
                     
-                    # 隐藏的删除按钮
-                    if st.button("", key=f"btn-delete-{i}", style={"display": "none"}):
+                    # 隐藏的删除按钮（使用空按钮）
+                    delete_clicked = st.button("  ", key=f"btn-delete-{i}", help="删除")
+                    if delete_clicked:
                         del photos[i]
                         save_data(PHOTOS_FILE, photos)
                         st.session_state.selected_photo = None
