@@ -632,7 +632,39 @@ def secret_page():
                                 st.rerun()
                     else:
                         st.markdown(f"> {secret['content']}")
-                        st.markdown(f"*发送者：{secret['user']} · {secret.get('timestamp', '未知时间')}*")
+                        st.markdown(f"*发送者：{secret['user']} (ID: {secret.get('user_id', '未知ID')}) · {secret.get('timestamp', '未知时间')}*")
+                        
+                        # 显示回复列表
+                        replies = secret.get('replies', [])
+                        if replies:
+                            st.markdown("---")
+                            st.markdown("**回复：**")
+                            for j, reply in enumerate(replies):
+                                st.markdown(f"🔹 **{reply['user']}** (ID: {reply.get('user_id', '未知ID')})")
+                                st.markdown(f"> {reply['content']}")
+                                st.markdown(f"*回复时间：{reply.get('timestamp', '未知时间')}*")
+                                if st.button(f"🗑️ 删除回复 {j}", key=f"delete_reply_{i}_{j}"):
+                                    del secrets[i]['replies'][j]
+                                    save_data(SECRET_FILE, secrets)
+                                    st.success("回复已删除！")
+                                    st.rerun()
+                        
+                        # 回复输入框
+                        st.markdown("---")
+                        reply_text = st.text_input(f"回复悄悄话 {secret['id']}：", key=f"reply_input_{i}")
+                        if st.button(f"💬 发送回复", key=f"send_reply_{i}"):
+                            if reply_text.strip():
+                                if 'replies' not in secrets[i]:
+                                    secrets[i]['replies'] = []
+                                secrets[i]['replies'].append({
+                                    "user": st.session_state.get('username', '匿名用户'),
+                                    "user_id": st.session_state.get('user_id', '未知ID'),
+                                    "content": reply_text.strip(),
+                                    "timestamp": st.session_state.get('login_time', '未知时间')
+                                })
+                                save_data(SECRET_FILE, secrets)
+                                st.success("回复已发送！")
+                                st.rerun()
                         
                         col1, col2 = st.columns(2)
                         with col1:
