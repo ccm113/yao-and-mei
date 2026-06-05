@@ -177,10 +177,16 @@ def home_page():
     
     # 照片展示
     st.markdown("---")
-    st.header("📷 时光照相机")
+    st.header("📷 分享一张故事照片")
     
-    # 加载照片数据（放在外部以便上传时访问）
+    # 加载照片数据
     photos = load_data(PHOTOS_FILE)
+    
+    # 状态管理
+    if 'selected_photo' not in st.session_state:
+        st.session_state.selected_photo = None
+    if 'show_details' not in st.session_state:
+        st.session_state.show_details = False
     
     # 使用加载状态
     with st.spinner("正在加载照片..."):
@@ -192,16 +198,40 @@ def home_page():
                 base64_str = image_to_base64(url)
                 if base64_str:
                     url = f"data:image/jpeg;base64,{base64_str}"
-            photo_urls.append({"url": url, "caption": photo["caption"]})
+            photo_urls.append({"url": url, "caption": photo.get("caption", ""), "description": photo.get("description", "")})
         
         # 使用 Streamlit 原生组件展示照片网格（不带标题）
-        num_cols = min(4, len(photos)) if photos else 4
-        cols = st.columns(num_cols)
+        if photos:
+            num_cols = min(4, len(photos))
+            cols = st.columns(num_cols)
+            
+            for i, photo in enumerate(photo_urls):
+                col = cols[i % num_cols]
+                with col:
+                    st.image(photo["url"], width=150, use_column_width=True)
+                    # 显示按钮
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(f"详情 {i+1}", key=f"detail_{i}"):
+                            st.session_state.selected_photo = i
+                            st.session_state.show_details = True
+                    with col2:
+                        if st.button(f"删除 {i+1}", key=f"delete_{i}"):
+                            del photos[i]
+                            save_data(PHOTOS_FILE, photos)
+                            st.success("照片已删除！")
+                            st.rerun()
         
-        for i, photo in enumerate(photo_urls):
-            col = cols[i % num_cols]
-            with col:
-                st.image(photo["url"], width=150, use_column_width=True)
+        # 详情弹窗
+        if st.session_state.show_details and st.session_state.selected_photo is not None:
+            photo = photo_urls[st.session_state.selected_photo]
+            st.markdown(f"### 📖 照片详情")
+            st.image(photo["url"], width=300)
+            st.markdown(f"**描述：** {photo['description']}")
+            if st.button("关闭详情"):
+                st.session_state.show_details = False
+                st.session_state.selected_photo = None
+                st.rerun()
     
     # 本地图片上传功能
     st.markdown("---")
@@ -232,10 +262,14 @@ def home_page():
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             
+            # 获取描述
+            description = st.text_input("请添加照片描述：", key="desc_input")
+            
             # 添加到照片列表
             photos.append({
                 "url": file_path,
-                "caption": f"照片 {len(photos) + 1}"
+                "caption": f"照片 {len(photos) + 1}",
+                "description": description if description else "暂无描述"
             })
             save_data(PHOTOS_FILE, photos)
             
@@ -244,6 +278,15 @@ def home_page():
             
             st.success("图片上传成功！")
             st.rerun()
+        else:
+            # 显示描述输入（如果是重复上传但还没填描述）
+            if 'desc_input' not in st.session_state:
+                description = st.text_input("请添加照片描述：", key="desc_input")
+                if st.button("保存描述"):
+                    photos[-1]["description"] = description if description else "暂无描述"
+                    save_data(PHOTOS_FILE, photos)
+                    st.success("描述已保存！")
+                    st.rerun()
     
     # 关键词展示
     st.markdown("---")
