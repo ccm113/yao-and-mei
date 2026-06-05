@@ -293,7 +293,7 @@ def story_page():
     <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%); border-radius: 20px; padding: 50px; margin-top: 20px; box-shadow: 0 10px 40px rgba(236, 72, 153, 0.15);">
         <div style="background: white; border-radius: 16px; padding: 40px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
             <div style="text-align: center; margin-bottom: 30px;">
-                <span style="font-size: 24px; color: #be185d; font-weight: bold; letter-spacing: 8px;">💌 给阿垚的信</span>
+                <span style="font-size: 24px; color: #be185d; font-weight: bold; letter-spacing: 8px;">💌 见信如面</span>
             </div>
             <div style="font-family: 'STSong', 'SimSun', serif; font-size: 18px; line-height: 2.2; color: #4c1d4c; text-indent: 2em;">
                 {letter.replace('**', '<strong>').replace('\n\n', '</p><p style="text-indent: 2em;">').replace('\n', '<br>').replace('<strong>', '</p><p style="text-indent: 2em; font-weight: bold;">').replace('</strong>', '</p><p style="text-indent: 2em;">')}
