@@ -78,7 +78,7 @@ st.set_page_config(
 def sidebar():
     with st.sidebar:
         st.title("💕 导航")
-        menu = st.radio("选择页面", ["首页", "故事回顾", "小游戏", "真心话问答", "心愿清单"])
+        menu = st.radio("选择页面", ["首页", "故事回顾", "小游戏", "真心话问答", "心愿清单", "个人画像"])
         return menu
 
 # 首页
@@ -315,6 +315,71 @@ def wishlist_page():
     else:
         st.write("还没有添加任何心愿，快选择一个想去的地方吧！")
 
+# 个人画像
+def portrait_page():
+    st.title("👩‍🦰 个人画像")
+    st.markdown("### 了解我们")
+    
+    # 两个按钮
+    col1, col2 = st.columns(2)
+    with col1:
+        yao_btn = st.button("👑 垚", use_container_width=True)
+    with col2:
+        mei_btn = st.button("🔥 梅", use_container_width=True)
+    
+    # 初始化状态
+    if 'selected_portrait' not in st.session_state:
+        st.session_state.selected_portrait = ''
+    
+    # 垚的画像
+    if yao_btn:
+        st.session_state.selected_portrait = 'yao'
+    
+    # 梅的画像
+    if mei_btn:
+        st.session_state.selected_portrait = 'mei'
+    
+    # 显示画像
+    if st.session_state.selected_portrait == 'yao':
+        st.markdown("""
+        <div style="display: flex; align-items: flex-start; gap: 30px; padding: 20px; background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%); border-radius: 16px; margin-top: 20px;">
+            <div style="width: 200px; height: 300px; background: linear-gradient(135deg, #ff6b9d, #ff8e53); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px;">👗</div>
+            <div style="flex: 1;">
+                <h3 style="color: #ec4899; margin-bottom: 20px;">气质美女 - 李昕垚</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        """, unsafe_allow_html=True)
+        
+        yao_tags = [
+            "爱吃火锅", "健身达人", "羽毛球健将", "肌肉美女", "舞担",
+            "不喜欢吃鸡肉", "不爱吃螺蛳粉", "不爱喝牛奶", "喜欢漂亮的礼裙",
+            "性格好惹但不准惹", "喜欢照顾别人"
+        ]
+        
+        for tag in yao_tags:
+            st.markdown(f'<span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: inline-block;">💬 {tag}</span>', unsafe_allow_html=True)
+        
+        st.markdown("</div></div></div>", unsafe_allow_html=True)
+    
+    elif st.session_state.selected_portrait == 'mei':
+        st.markdown("""
+        <div style="display: flex; align-items: flex-start; gap: 30px; padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; margin-top: 20px;">
+            <div style="width: 200px; height: 300px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px;">🔥</div>
+            <div style="flex: 1;">
+                <h3 style="color: #f59e0b; margin-bottom: 20px;">活泼美女 - 陈昌梅</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        """, unsafe_allow_html=True)
+        
+        mei_tags = [
+            "有个性", "喜欢酷酷的衣服", "爱吃一切美食", "不爱喝纯牛奶", "爱吃鸡公煲",
+            "羽毛球菜但爱打", "想健身但不行动", "想跳舞但不行动", "最近喜欢游泳",
+            "别惹我！", "粗糙", "自己都照顾不好"
+        ]
+        
+        for tag in mei_tags:
+            st.markdown(f'<span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: inline-block;">💬 {tag}</span>', unsafe_allow_html=True)
+        
+        st.markdown("</div></div></div>", unsafe_allow_html=True)
+
 # 主程序
 menu = sidebar()
 
@@ -328,3 +393,5 @@ elif menu == "真心话问答":
     qna_page()
 elif menu == "心愿清单":
     wishlist_page()
+elif menu == "个人画像":
+    portrait_page()
