@@ -81,7 +81,7 @@ def home_page():
     
     # 照片展示
     st.markdown("---")
-    st.header("📷 感谢相机")
+    st.header("📷 时光照相机")
     photos = load_data(PHOTOS_FILE)
     
     # 使用 Streamlit 原生组件展示照片网格
