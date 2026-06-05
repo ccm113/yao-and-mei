@@ -164,7 +164,7 @@ st.set_page_config(
 def sidebar():
     with st.sidebar:
         st.title("💕 导航")
-        menu = st.radio("选择页面", ["首页", "故事回顾", "真心话问答", "个人画像"])
+        menu = st.radio("选择页面", ["首页", "见信如面", "真心话问答", "个人画像"])
         return menu
 
 # 首页
@@ -240,9 +240,9 @@ def home_page():
     
     st.markdown(keywords_html, unsafe_allow_html=True)
 
-# 给阿垚的信
+# 见信如面
 def story_page():
-    st.title("� 给阿垚的信")
+    st.title("💌 见信如面")
     
     letter = """
     **吾友昕垚，展信如晤。**
