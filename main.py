@@ -281,7 +281,9 @@ def home_page():
 def story_page():
     st.title("💌 见信如面")
     
-    letter = """
+    # 使用简单的Markdown显示信件内容
+    st.markdown("---")
+    st.markdown("""
     **吾友昕垚，展信如晤。**
 
     六年了。
@@ -323,22 +325,9 @@ def story_page():
     **你的梅**
 
     在心里，在纸上，在每一条我们一起跑过的路上。
-    """
-    
-    # 美化的信纸样式
-    st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%); border-radius: 20px; padding: 50px; margin-top: 20px; box-shadow: 0 10px 40px rgba(236, 72, 153, 0.15);">
-        <div style="background: white; border-radius: 16px; padding: 40px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <span style="font-size: 24px; color: #be185d; font-weight: bold; letter-spacing: 8px;">💌 见信如面</span>
-            </div>
-            <div style="font-family: 'STSong', 'SimSun', serif; font-size: 18px; line-height: 2.2; color: #4c1d4c; text-indent: 2em;">
-                {letter.replace('**', '<strong>').replace('\n\n', '</p><p style="text-indent: 2em;">').replace('\n', '<br>').replace('<strong>', '</p><p style="text-indent: 2em; font-weight: bold;">').replace('</strong>', '</p><p style="text-indent: 2em;">')}
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    st.markdown("💖 **" + " ".join(["💕" for _ in range(20)]) + "**")
+    """)
+    st.markdown("---")
+    st.markdown("💖 " + "💕" * 20 + " 💖")
 
 # 真心话问答
 def qna_page():
