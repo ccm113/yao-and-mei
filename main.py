@@ -7,7 +7,6 @@ import random
 # 数据文件路径
 USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
-WISHLIST_FILE = "wishlist.json"
 QNA_FILE = "qna.json"
 
 # 将本地图片转换为 Base64
@@ -111,7 +110,7 @@ st.set_page_config(
 def sidebar():
     with st.sidebar:
         st.title("💕 导航")
-        menu = st.radio("选择页面", ["首页", "故事回顾", "小游戏", "真心话问答", "心愿清单", "个人画像"])
+        menu = st.radio("选择页面", ["首页", "故事回顾", "真心话问答", "个人画像"])
         return menu
 
 # 首页
@@ -205,59 +204,6 @@ def story_page():
     st.markdown("---")
     st.markdown("💖 **" + " ".join(["💕" for _ in range(20)]) + "**")
 
-# 小游戏
-def game_page():
-    st.title("🎮 闺蜜小游戏")
-    st.markdown("### 测试你们的默契程度")
-    
-    # 记忆翻牌游戏
-    if 'cards' not in st.session_state:
-        st.session_state.cards = []
-        st.session_state.flipped = []
-        st.session_state.matches = []
-        st.session_state.moves = 0
-    
-    # 初始化游戏
-    def init_game():
-        emojis = ["💕", "💖", "🌸", "💝", "🎀", "💎", "✨", "🌟"] * 2
-        random.shuffle(emojis)
-        st.session_state.cards = emojis
-        st.session_state.flipped = []
-        st.session_state.matches = []
-        st.session_state.moves = 0
-    
-    if st.button("🔄 开始新游戏"):
-        init_game()
-    
-    # 显示游戏面板
-    if st.session_state.cards:
-        cols = st.columns(4)
-        for i, emoji in enumerate(st.session_state.cards):
-            col = cols[i % 4]
-            is_flipped = i in st.session_state.flipped or i in st.session_state.matches
-            
-            if col.button(emoji if is_flipped else "❓", key=f"card_{i}", 
-                         use_container_width=True, height=80):
-                if i not in st.session_state.flipped and i not in st.session_state.matches:
-                    st.session_state.flipped.append(i)
-                    
-                    if len(st.session_state.flipped) == 2:
-                        st.session_state.moves += 1
-                        idx1, idx2 = st.session_state.flipped
-                        if st.session_state.cards[idx1] == st.session_state.cards[idx2]:
-                            st.session_state.matches.extend([idx1, idx2])
-                        st.session_state.flipped = []
-                        st.rerun()
-        
-        st.markdown(f"---\n**移动次数**: {st.session_state.moves}")
-        
-        if len(st.session_state.matches) == len(st.session_state.cards):
-            st.success(f"🎉 恭喜！你用了 {st.session_state.moves} 步完成游戏！")
-    
-    else:
-        init_game()
-        st.rerun()
-
 # 真心话问答
 def qna_page():
     st.title("💬 真心话问答")
@@ -329,56 +275,6 @@ def qna_page():
                         st.markdown("---")
                 else:
                     st.markdown("暂无回答")
-
-# 心愿清单
-def wishlist_page():
-    st.title("✈️ 心愿清单")
-    st.markdown("### 想和你一起去的地方")
-    
-    # 热门旅游目的地
-    destinations = [
-        {"name": "巴黎", "country": "法国", "image": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=300"},
-        {"name": "东京", "country": "日本", "image": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300"},
-        {"name": "巴厘岛", "country": "印尼", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-        {"name": "马尔代夫", "country": "马尔代夫", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-        {"name": "悉尼", "country": "澳大利亚", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-        {"name": "纽约", "country": "美国", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-        {"name": "威尼斯", "country": "意大利", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-        {"name": "普吉岛", "country": "泰国", "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300"},
-    ]
-    
-    # 心愿清单数据
-    wishlist = load_data(WISHLIST_FILE)
-    
-    # 展示目的地网格
-    st.subheader("🌍 选择想去的地方")
-    cols = st.columns(4)
-    for i, dest in enumerate(destinations):
-        col = cols[i % 4]
-        with col:
-            st.image(dest["image"], caption=f"{dest['name']}, {dest['country']}", width=150)
-            if st.button(f"➕ 添加到心愿单", key=f"add_{i}"):
-                if dest["name"] not in [w["name"] for w in wishlist]:
-                    wishlist.append(dest)
-                    save_data(WISHLIST_FILE, wishlist)
-                    st.success(f"已添加 {dest['name']}！")
-                    st.rerun()
-    
-    # 显示心愿清单
-    st.markdown("---")
-    st.subheader("📋 我的心愿清单")
-    if wishlist:
-        for i, item in enumerate(wishlist):
-            cols = st.columns([3, 1])
-            with cols[0]:
-                st.write(f"**{i+1}. {item['name']}, {item['country']}**")
-            with cols[1]:
-                if st.button("❌", key=f"remove_{i}"):
-                    wishlist.pop(i)
-                    save_data(WISHLIST_FILE, wishlist)
-                    st.rerun()
-    else:
-        st.write("还没有添加任何心愿，快选择一个想去的地方吧！")
 
 # 个人画像
 def portrait_page():
@@ -453,11 +349,7 @@ if menu == "首页":
     home_page()
 elif menu == "故事回顾":
     story_page()
-elif menu == "小游戏":
-    game_page()
 elif menu == "真心话问答":
     qna_page()
-elif menu == "心愿清单":
-    wishlist_page()
 elif menu == "个人画像":
     portrait_page()
