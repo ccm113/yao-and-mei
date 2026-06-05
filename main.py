@@ -339,46 +339,83 @@ def portrait_page():
     if mei_btn:
         st.session_state.selected_portrait = 'mei'
     
-    # 显示画像
+    # 显示画像（气泡围绕美女形象四周）
     if st.session_state.selected_portrait == 'yao':
         st.markdown("""
-        <div style="display: flex; align-items: flex-start; gap: 30px; padding: 20px; background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%); border-radius: 16px; margin-top: 20px;">
-            <div style="width: 200px; height: 300px; background: linear-gradient(135deg, #ff6b9d, #ff8e53); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px;">👗</div>
-            <div style="flex: 1;">
-                <h3 style="color: #ec4899; margin-bottom: 20px;">气质美女 - 李昕垚</h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        <div style="position: relative; padding: 40px; background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%); border-radius: 20px; margin-top: 20px;">
+            <!-- 上方气泡 -->
+            <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃火锅</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 健身达人</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 羽毛球健将</span>
+            </div>
+            
+            <!-- 左侧气泡 -->
+            <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 肌肉美女</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 舞担</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢漂亮的礼裙</span>
+            </div>
+            
+            <!-- 中间美女形象 -->
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 220px; height: 320px; background: linear-gradient(135deg, #ff6b9d, #ff8e53); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);">👗</div>
+                <h3 style="color: #ec4899; margin-top: 20px;">气质美女 - 李昕垚</h3>
+            </div>
+            
+            <!-- 右侧气泡 -->
+            <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不喜欢吃鸡肉</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱吃螺蛳粉</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱喝牛奶</span>
+            </div>
+            
+            <!-- 下方气泡 -->
+            <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 性格好惹但不准惹</span>
+                <span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢照顾别人</span>
+            </div>
+        </div>
         """, unsafe_allow_html=True)
-        
-        yao_tags = [
-            "爱吃火锅", "健身达人", "羽毛球健将", "肌肉美女", "舞担",
-            "不喜欢吃鸡肉", "不爱吃螺蛳粉", "不爱喝牛奶", "喜欢漂亮的礼裙",
-            "性格好惹但不准惹", "喜欢照顾别人"
-        ]
-        
-        for tag in yao_tags:
-            st.markdown(f'<span style="background: white; color: #ec4899; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: inline-block;">💬 {tag}</span>', unsafe_allow_html=True)
-        
-        st.markdown("</div></div></div>", unsafe_allow_html=True)
     
     elif st.session_state.selected_portrait == 'mei':
         st.markdown("""
-        <div style="display: flex; align-items: flex-start; gap: 30px; padding: 20px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; margin-top: 20px;">
-            <div style="width: 200px; height: 300px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 80px;">🔥</div>
-            <div style="flex: 1;">
-                <h3 style="color: #f59e0b; margin-bottom: 20px;">活泼美女 - 陈昌梅</h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        <div style="position: relative; padding: 40px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 20px; margin-top: 20px;">
+            <!-- 上方气泡 -->
+            <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 有个性</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 喜欢酷酷的衣服</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃一切美食</span>
+            </div>
+            
+            <!-- 左侧气泡 -->
+            <div style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 不爱喝纯牛奶</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 爱吃鸡公煲</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 羽毛球菜但爱打</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 想健身但不行动</span>
+            </div>
+            
+            <!-- 中间美女形象 -->
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 220px; height: 320px; background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);">🔥</div>
+                <h3 style="color: #f59e0b; margin-top: 20px;">活泼美女 - 陈昌梅</h3>
+            </div>
+            
+            <!-- 右侧气泡 -->
+            <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px;">
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 想跳舞但不行动</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 最近喜欢游泳</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 别惹我！</span>
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 粗糙</span>
+            </div>
+            
+            <!-- 下方气泡 -->
+            <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px;">
+                <span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">💬 自己都照顾不好</span>
+            </div>
+        </div>
         """, unsafe_allow_html=True)
-        
-        mei_tags = [
-            "有个性", "喜欢酷酷的衣服", "爱吃一切美食", "不爱喝纯牛奶", "爱吃鸡公煲",
-            "羽毛球菜但爱打", "想健身但不行动", "想跳舞但不行动", "最近喜欢游泳",
-            "别惹我！", "粗糙", "自己都照顾不好"
-        ]
-        
-        for tag in mei_tags:
-            st.markdown(f'<span style="background: white; color: #f59e0b; padding: 10px 20px; border-radius: 25px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: inline-block;">💬 {tag}</span>', unsafe_allow_html=True)
-        
-        st.markdown("</div></div></div>", unsafe_allow_html=True)
 
 # 主程序
 menu = sidebar()
