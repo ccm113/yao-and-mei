@@ -216,31 +216,67 @@ def home_page():
     
     st.markdown(keywords_html, unsafe_allow_html=True)
 
-# 故事回顾
+# 给阿垚的信
 def story_page():
-    st.title("📖 故事回顾")
-    st.markdown("### 相识相知的美好时光")
+    st.title("� 给阿垚的信")
     
-    story = """
-    在一个阳光明媚的午后，李昕垚和陈昌梅在大学图书馆相遇了。
-    
-    那天，昕垚正在找一本很难找的书，不小心撞到了梅。书本散落一地，两人同时弯腰去捡，指尖不经意地触碰，那一刻，她们都红了脸。
-    
-    "对不起！" "没关系！" 两人异口同声地说。
-    
-    就这样，她们认识了。从图书馆的偶遇，到一起上课、一起吃饭、一起在操场散步，她们的友谊像春天的藤蔓一样，慢慢生长。
-    
-    昕垚喜欢安静地看书，梅喜欢热闹地讲笑话；昕垚做事认真细致，梅总是充满活力。她们性格互补，却又心意相通。
-    
-    一起哭过，一起笑过，一起经历了人生中最美好的青春年华。这份友谊，如同璀璨的星光，照亮彼此的人生道路。
-    
-    愿我们的友谊，天长地久，永远闪耀！
+    letter = """
+    **吾友昕垚，展信如晤。**
+
+    六年了。
+
+    六年的风，六年的汗，六年的作训服上洗不掉的盐。
+
+    每一次想起我们一起奔跑的日子，心里就有什么东西在燃烧——不是烫，是亮，是那种让人想哭的亮。
+
+    你在协会里，从一颗种子长成一团火，再长成所有人的光。
+    我站在你的光芒里，被你照亮过；
+    可我更愿意站在你身后——做你的影子，做你的盾，做那个替你骂世界的人。
+
+    你总是笑着，温柔得像三月的风，替所有人想，却把自己累成了一片快要飘走的叶子。
+    你终于变成了全世界都喜欢的样子。
+    可你知道吗？我曾跟你较过劲——你跑得那么快，飞得那么高。
+    我偷偷跟自己较劲，直到我认了：
+    运动细胞过于少了。
+
+    那两年，我们的联系断得像碎掉的琴弦。
+    我以为你忘了我，我以为时间真的会冲淡一切。
+    可毕业后的第一次见面——你一笑，整个世界都亮了，
+    我所有的防线，全部崩塌。
+
+    原来有些感情，不需要见面也能活；
+    一见面，它就更加具象了。
+
+    今年终于可以一起过你的生日了。
+    也真替你高兴——你遇见了新的爱情。
+    这世上多了一双拥抱你的手，多了一颗爱你的心。
+
+    但有人欺负你，我还是第一个冲上去。
+
+    昕垚，生日快乐。
+
+    愿你永远一往无前，像旷野上的风；
+    永远燃烧，像不肯熄灭的星；
+    永远做你自己——那个让我甘愿做影子的，发光的你。
+
+    **你的梅**
+
+    在心里，在纸上，在每一条我们一起跑过的路上。
     """
     
-    st.write(story)
-    
-    # 添加一些装饰性的分隔
-    st.markdown("---")
+    # 美化的信纸样式
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%); border-radius: 20px; padding: 50px; margin-top: 20px; box-shadow: 0 10px 40px rgba(236, 72, 153, 0.15);">
+        <div style="background: white; border-radius: 16px; padding: 40px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <span style="font-size: 24px; color: #be185d; font-weight: bold; letter-spacing: 8px;">💌 给阿垚的信</span>
+            </div>
+            <div style="font-family: 'STSong', 'SimSun', serif; font-size: 18px; line-height: 2.2; color: #4c1d4c; text-indent: 2em;">
+                {letter.replace('**', '<strong>').replace('\n\n', '</p><p style="text-indent: 2em;">').replace('\n', '<br>').replace('<strong>', '</p><p style="text-indent: 2em; font-weight: bold;">').replace('</strong>', '</p><p style="text-indent: 2em;">')}
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("💖 **" + " ".join(["💕" for _ in range(20)]) + "**")
 
 # 真心话问答
