@@ -508,75 +508,22 @@ def home_page():
                     # 检查是否选中了当前照片
                     is_selected = st.session_state.selected_photo == i
                     
-                    # 显示图片（使用CSS hover实现悬停按钮效果）
-                    st.markdown(f"""
-                    <style>
-                    .photo-container {{
-                        position: relative;
-                        display: inline-block;
-                        width: 100%;
-                    }}
-                    .photo-container img {{
-                        width: 100%;
-                        border-radius: 8px;
-                        cursor: pointer;
-                    }}
-                    .photo-container .photo-overlay {{
-                        position: absolute;
-                        bottom: 10px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        display: none;
-                        gap: 10px;
-                    }}
-                    .photo-container:hover .photo-overlay,
-                    .photo-container.selected .photo-overlay {{
-                        display: flex;
-                    }}
-                    .photo-btn {{
-                        padding: 6px 16px;
-                        border: none;
-                        border-radius: 15px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                        transition: transform 0.2s;
-                    }}
-                    .photo-btn:hover {{
-                        transform: scale(1.05);
-                    }}
-                    .btn-detail {{
-                        background: rgba(255,255,255,0.95);
-                        color: #be185d;
-                    }}
-                    .btn-delete {{
-                        background: rgba(239,68,68,0.95);
-                        color: white;
-                    }}
-                    </style>
-                    <div class="photo-container {'selected' if is_selected else ''}">
-                        <img src="{photo['url']}" />
-                        <div class="photo-overlay">
-                            <button class="photo-btn btn-detail" onclick="document.getElementById('btn-detail-{i}').click()">详情</button>
-                            <button class="photo-btn btn-delete" onclick="document.getElementById('btn-delete-{i}').click()">删除</button>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    # 显示图片
+                    st.image(photo["url"], use_column_width=True)
                     
-                    # 隐藏的详情按钮（使用空按钮）
-                    detail_clicked = st.button(" ", key=f"btn-detail-{i}", help="详情")
-                    if detail_clicked:
-                        st.session_state.selected_photo = i if st.session_state.selected_photo != i else None
-                        st.rerun()
-                    
-                    # 隐藏的删除按钮（使用空按钮）
-                    delete_clicked = st.button("  ", key=f"btn-delete-{i}", help="删除")
-                    if delete_clicked:
-                        del photos[i]
-                        save_data(PHOTOS_FILE, photos)
-                        st.session_state.selected_photo = None
-                        st.success("照片已删除！")
-                        st.rerun()
+                    # 添加详情和删除按钮
+                    col1, col2 = st.columns([1, 1])
+                    with col1:
+                        if st.button(f"📖 详情", key=f"detail-{i}", use_container_width=True):
+                            st.session_state.selected_photo = i
+                            st.rerun()
+                    with col2:
+                        if st.button(f"🗑️ 删除", key=f"delete-{i}", use_container_width=True):
+                            del photos[i]
+                            save_data(PHOTOS_FILE, photos)
+                            st.session_state.selected_photo = None
+                            st.success("照片已删除！")
+                            st.rerun()
             
             # 详情弹窗
             if st.session_state.selected_photo is not None:
@@ -587,71 +534,60 @@ def home_page():
     
     # 本地图片上传功能
     st.markdown("---")
+    
+    # 初始化 session_state
+    if 'upload_success' not in st.session_state:
+        st.session_state.upload_success = False
+    
     uploaded_file = st.file_uploader("🖼️ 添加图片", type=["jpg", "jpeg", "png", "gif"])
     
-    if uploaded_file is not None:
-        # 使用 session_state 防止重复上传
-        if 'uploaded_file_id' not in st.session_state:
-            st.session_state.uploaded_file_id = None
+    if uploaded_file is not None and not st.session_state.upload_success:
+        # 将图片转换为 Base64 编码
+        import base64
+        import io
+        from PIL import Image, ImageOps
         
-        # 生成文件唯一标识（基于文件名和文件大小）
-        file_identifier = f"{uploaded_file.name}_{uploaded_file.size}"
-        
-        # 检查是否已经处理过这个文件
-        if st.session_state.uploaded_file_id != file_identifier:
-            # 将图片转换为 Base64 编码
-            import base64
-            import io
-            from PIL import Image, ImageOps
+        try:
+            # 读取图片
+            img = Image.open(uploaded_file)
+            # 修复EXIF方向问题
+            img = ImageOps.exif_transpose(img)
             
-            try:
-                # 读取图片
-                img = Image.open(uploaded_file)
-                # 修复EXIF方向问题
-                img = ImageOps.exif_transpose(img)
-                
-                # 缩小图片尺寸（提高加载速度）
-                max_size = 800
-                width, height = img.size
-                if max(width, height) > max_size:
-                    ratio = max_size / max(width, height)
-                    img = img.resize((int(width * ratio), int(height * ratio)), Image.Resampling.LANCZOS)
-                
-                # 转换为JPEG格式并压缩
-                buffer = io.BytesIO()
-                img.save(buffer, format='JPEG', quality=85)
-                base64_str = base64.b64encode(buffer.getvalue()).decode()
-                
-                # 生成 Base64 URL
-                base64_url = f"data:image/jpeg;base64,{base64_str}"
-                
-                # 获取描述
-                description = st.text_input("请添加照片描述：", key="desc_input")
-                
-                # 添加到照片列表（使用 Base64 编码直接存储）
-                photos.append({
-                    "url": base64_url,
-                    "caption": f"照片 {len(photos) + 1}",
-                    "description": description if description else "暂无描述"
-                })
-                save_data(PHOTOS_FILE, photos)
-                
-                # 更新 session_state 标记已处理
-                st.session_state.uploaded_file_id = file_identifier
-                
-                st.success("图片上传成功！")
-                st.rerun()
-            except Exception as e:
-                st.error(f"图片处理失败：{str(e)}")
-        else:
-            # 显示描述输入（如果是重复上传但还没填描述）
-            if 'desc_input' not in st.session_state:
-                description = st.text_input("请添加照片描述：", key="desc_input")
-                if st.button("保存描述"):
-                    photos[-1]["description"] = description if description else "暂无描述"
-                    save_data(PHOTOS_FILE, photos)
-                    st.success("描述已保存！")
-                    st.rerun()
+            # 缩小图片尺寸（提高加载速度）
+            max_size = 800
+            width, height = img.size
+            if max(width, height) > max_size:
+                ratio = max_size / max(width, height)
+                img = img.resize((int(width * ratio), int(height * ratio)), Image.Resampling.LANCZOS)
+            
+            # 转换为JPEG格式并压缩
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=85)
+            base64_str = base64.b64encode(buffer.getvalue()).decode()
+            
+            # 生成 Base64 URL
+            base64_url = f"data:image/jpeg;base64,{base64_str}"
+            
+            # 获取描述
+            description = st.text_input("请添加照片描述：", key="desc_input")
+            
+            # 添加到照片列表（使用 Base64 编码直接存储）
+            photos.append({
+                "url": base64_url,
+                "caption": f"照片 {len(photos) + 1}",
+                "description": description if description else "暂无描述"
+            })
+            save_data(PHOTOS_FILE, photos)
+            
+            st.success("图片上传成功！")
+            st.session_state.upload_success = True
+            st.rerun()
+        except Exception as e:
+            st.error(f"图片处理失败：{str(e)}")
+    
+    # 重置上传状态
+    if st.session_state.upload_success:
+        st.session_state.upload_success = False
     
     # 关键词展示
     st.markdown("---")
@@ -771,8 +707,12 @@ def qna_page():
         
         st.markdown(f"### 🎯 {current_q['question']}")
         
-        # 答案输入
-        answer = st.text_area("你的回答：", height=100)
+        # 初始化答案输入状态
+        if 'qna_answer' not in st.session_state:
+            st.session_state.qna_answer = ""
+        
+        # 答案输入（使用 session_state 管理）
+        answer = st.text_area("你的回答：", value=st.session_state.qna_answer, height=100, key="qna_input")
         username = st.session_state.get('username', '匿名用户')
         
         if st.button("💾 保存答案"):
@@ -786,6 +726,8 @@ def qna_page():
                 })
                 save_data(QNA_FILE, qna_data)
                 st.success("答案已保存！")
+                # 清除输入框
+                st.session_state.qna_answer = ""
                 # 随机下一题
                 st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
                 st.rerun()
@@ -851,7 +793,11 @@ def portrait_page():
         
         # 添加描述按钮
         st.markdown("---")
-        new_desc = st.text_input("添加新描述：", placeholder="输入对垚的描述...")
+        # 初始化输入框状态
+        if 'portrait_input_yao' not in st.session_state:
+            st.session_state.portrait_input_yao = ""
+        
+        new_desc = st.text_input("添加新描述：", value=st.session_state.portrait_input_yao, placeholder="输入对垚的描述...", key="portrait_yao")
         if st.button("➕ 增加描述"):
             if new_desc.strip():
                 # 添加表情前缀
@@ -862,11 +808,13 @@ def portrait_page():
                 portrait_data['yao'].append(new_desc_with_emoji)
                 save_data(PORTRAIT_FILE, portrait_data)
                 st.success("描述已添加！")
+                # 清除输入框
+                st.session_state.portrait_input_yao = ""
                 st.rerun()
     
     # 梅的画像
     elif st.session_state.get('selected_portrait') == 'mei':
-        st.subheader("� 活泼美女 - 陈昌梅")
+        st.subheader("🤸 活泼美女 - 陈昌梅")
         
         # 生成气泡HTML
         bubbles_html = ""
@@ -886,17 +834,23 @@ def portrait_page():
         
         # 添加描述按钮
         st.markdown("---")
-        new_desc = st.text_input("添加新描述：", placeholder="输入对梅的描述...")
+        # 初始化输入框状态
+        if 'portrait_input_mei' not in st.session_state:
+            st.session_state.portrait_input_mei = ""
+        
+        new_desc = st.text_input("添加新描述：", value=st.session_state.portrait_input_mei, placeholder="输入对梅的描述...", key="portrait_mei")
         if st.button("➕ 增加描述"):
             if new_desc.strip():
                 # 添加表情前缀
-                emojis = ["💕", "💖", "✨", "🌟", "💝", "🎀", "💎", "�"]
+                emojis = ["💕", "💖", "✨", "🌟", "💝", "🎀", "💎", "🌸"]
                 emoji = random.choice(emojis)
                 new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
                 
                 portrait_data['mei'].append(new_desc_with_emoji)
                 save_data(PORTRAIT_FILE, portrait_data)
                 st.success("描述已添加！")
+                # 清除输入框
+                st.session_state.portrait_input_mei = ""
                 st.rerun()
 
 # 主程序
@@ -917,8 +871,12 @@ def secret_page():
     
     # 写悄悄话模式
     if st.session_state.secret_view_mode == 'write':
-        # 输入框
-        secret_text = st.text_area("写下你的悄悄话：", height=100, placeholder="想说但不好意思当面说的话...")
+        # 初始化输入框状态
+        if 'secret_text' not in st.session_state:
+            st.session_state.secret_text = ""
+        
+        # 输入框（使用 session_state 管理）
+        secret_text = st.text_area("写下你的悄悄话：", value=st.session_state.secret_text, height=100, placeholder="想说但不好意思当面说的话...", key="secret_input")
         
         # 发送按钮
         if st.button("✉️ 发送悄悄话"):
@@ -933,6 +891,9 @@ def secret_page():
                 })
                 save_data(SECRET_FILE, secrets)
                 st.success("悄悄话已发送！")
+                # 清除输入框
+                st.session_state.secret_text = ""
+                st.rerun()
         
         # 查看所有悄悄话按钮
         if st.button("📋 查看所有悄悄话"):
