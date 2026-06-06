@@ -929,6 +929,12 @@ def secret_page():
     **我想让你知道但不好直说的事情，悄悄留了个言，看你什么时候发现。**
     """)
     
+    # 加载悄悄话数据（优先使用数据库）
+    if is_db_connected():
+        secrets = get_secrets()
+    else:
+        secrets = load_data(SECRET_FILE)
+    
     # 状态管理
     if 'secret_view_mode' not in st.session_state:
         st.session_state.secret_view_mode = 'write'  # 'write' 或 'view_all'
