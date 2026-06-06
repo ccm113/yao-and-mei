@@ -1052,8 +1052,8 @@ def secret_page():
                                 st.session_state.editing_index = None
                                 st.rerun()
                     else:
-                        st.markdown(f"> {secret['content']}")
-                        st.markdown(f"*发送者：{secret['user']} (ID: {secret.get('user_id', '未知ID')}) · {secret.get('timestamp', '未知时间')}*")
+                        st.markdown(f"> {secret.get('content', '')}")
+                        st.markdown(f"*发送者：{user_name} (ID: {secret.get('user_id', '未知ID')}) · {secret.get('timestamp', '未知时间')}*")
                         
                         # 显示回复列表
                         replies = secret.get('replies', [])
