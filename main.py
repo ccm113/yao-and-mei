@@ -314,15 +314,122 @@ def home_page():
         </div>
         """, unsafe_allow_html=True)
     
-    # 引言语录
+    # 引言语录（自动切换）
+    friendship_quotes = [
+        {"text": "真正的友谊不是花言巧语，而是在最困难的时候，朋友依然在你身边，默默支持你。", "author": "垚 & 槑"},
+        {"text": "闺蜜是世界上另一个自己，懂你的喜怒哀乐，陪你走过春夏秋冬。", "author": "垚 & 槑"},
+        {"text": "好朋友就像星星，不一定经常见到，但你知道他们一直在那里。", "author": "垚 & 槑"},
+        {"text": "友谊是人生路上最美的风景，有你同行，旅途不再孤单。", "author": "垚 & 槑"},
+        {"text": "真正的朋友会在你需要的时候出现，不需要华丽的言语，只需要一个拥抱。", "author": "垚 & 槑"},
+        {"text": "闺蜜之间的默契，一个眼神就能明白彼此的心意。", "author": "垚 & 槑"},
+        {"text": "友谊不是一幕短暂的烟火，而是一幅真心的画卷。", "author": "垚 & 槑"},
+        {"text": "最好的朋友是那种不喜欢多说，却能与你默默相对而又息息相通的人。", "author": "垚 & 槑"},
+        {"text": "闺蜜就是，当你想哭诉的时候，她会把肩膀借给你靠，当你想疯狂的时候，她会陪你一起疯。", "author": "垚 & 槑"},
+        {"text": "真正的友谊，是一株成长缓慢的植物，需要用心呵护才能茁壮成长。", "author": "垚 & 槑"},
+        {"text": "朋友是生命中最珍贵的礼物，让我们的人生更加丰富多彩。", "author": "垚 & 槑"},
+        {"text": "闺蜜之间，没有秘密，没有距离，只有无尽的理解和支持。", "author": "垚 & 槑"},
+        {"text": "友谊的真谛在于理解和宽容，在于真诚和信任。", "author": "垚 & 槑"},
+        {"text": "最好的友情，是你不说，她却都懂。", "author": "垚 & 槑"},
+        {"text": "朋友是冬日里的暖阳，夏日里的清风，永远温暖着我们的心灵。", "author": "垚 & 槑"},
+        {"text": "闺蜜是那个陪你笑、陪你哭、陪你一起犯傻的人。", "author": "垚 & 槑"},
+        {"text": "真正的友谊经得起时间的考验，经得起距离的考验。", "author": "垚 & 槑"},
+        {"text": "友谊就像一杯清茶，越品越香，越陈越浓。", "author": "垚 & 槑"},
+        {"text": "好朋友是一面镜子，让你看到最好的自己。", "author": "垚 & 槑"},
+        {"text": "闺蜜之间的感情，比爱情更坚固，比亲情更贴心。", "author": "垚 & 槑"},
+        {"text": "友谊是一朵盛开的花，需要用真心去浇灌，才能绽放出最美的光彩。", "author": "垚 & 槑"},
+        {"text": "真正的朋友会在你成功时为你高兴，在你失败时给你鼓励。", "author": "垚 & 槑"},
+        {"text": "闺蜜是那个知道你所有缺点却依然爱你的人。", "author": "垚 & 槑"},
+        {"text": "友谊不是等来的，而是用心经营出来的。", "author": "垚 & 槑"},
+        {"text": "最好的友情，是各自忙碌，又互相牵挂。", "author": "垚 & 槑"},
+        {"text": "朋友是人生路上的灯塔，照亮我们前行的道路。", "author": "垚 & 槑"},
+        {"text": "闺蜜之间的约定，是一辈子的承诺。", "author": "垚 & 槑"},
+        {"text": "真正的友谊，是在你最需要的时候伸出援手，而不是锦上添花。", "author": "垚 & 槑"},
+        {"text": "友谊是一首动听的歌，旋律优美，让人回味无穷。", "author": "垚 & 槑"},
+        {"text": "好朋友就像一本好书，每次阅读都有新的收获。", "author": "垚 & 槑"},
+        {"text": "闺蜜是那个陪你从校服到婚纱的人，见证你人生的每一个重要时刻。", "author": "垚 & 槑"},
+        {"text": "真正的友谊，是不计较得失，只在乎彼此的感受。", "author": "垚 & 槑"},
+        {"text": "友谊是人生最宝贵的财富，千金难买，万金不换。", "author": "垚 & 槑"},
+        {"text": "闺蜜之间的默契，是不需要言语的心灵相通。", "author": "垚 & 槑"},
+        {"text": "真正的朋友，是无论多久没见，见面依然如故。", "author": "垚 & 槑"},
+        {"text": "友谊就像一颗种子，需要用心培育，才能长成参天大树。", "author": "垚 & 槑"}
+    ]
+    
+    # 初始化当前句子索引
+    if 'current_quote_index' not in st.session_state:
+        st.session_state.current_quote_index = 0
+    
+    # 获取当前句子
+    current_quote = friendship_quotes[st.session_state.current_quote_index]
+    
     st.markdown("""
+    <style>
+    .quote-box {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-left: 4px solid #fbbf24;
+        border-radius: 0 16px 16px 0;
+        padding: 24px 30px;
+        margin: 30px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .quote-box::before {
+        content: '💬';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        font-size: 80px;
+        opacity: 0.1;
+    }
+    .quote-text {
+        font-size: 18px;
+        color: #92400e;
+        font-style: italic;
+        line-height: 1.8;
+        transition: opacity 0.5s ease;
+    }
+    .quote-author {
+        text-align: right;
+        color: #b45309;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+    .quote-counter {
+        text-align: center;
+        color: #d97706;
+        font-size: 14px;
+        margin-top: 10px;
+        opacity: 0.7;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
     <div class="quote-box">
-        <div class="quote-text">
-            "真正的友谊不是花言巧语，而是在最困难的时候，
-            朋友依然在你身边，默默支持你。"
-        </div>
-        <div class="quote-author">—— 垚 & 槑</div>
+        <div class="quote-text">"{current_quote['text']}"</div>
+        <div class="quote-author">—— {current_quote['author']}</div>
+        <div class="quote-counter">第 {st.session_state.current_quote_index + 1} / {len(friendship_quotes)} 句</div>
     </div>
+    """, unsafe_allow_html=True)
+    
+    # 添加手动切换按钮
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("◀️ 上一句"):
+            st.session_state.current_quote_index = (st.session_state.current_quote_index - 1) % len(friendship_quotes)
+            st.rerun()
+    with col2:
+        if st.button("下一句 ▶️"):
+            st.session_state.current_quote_index = (st.session_state.current_quote_index + 1) % len(friendship_quotes)
+            st.rerun()
+    
+    # 添加自动切换的JavaScript
+    st.markdown("""
+    <script>
+    // 每隔10分钟（600000毫秒）自动刷新页面，实现句子切换
+    setTimeout(function() {
+        window.location.reload();
+    }, 600000); // 10分钟 = 600000毫秒
+    </script>
     """, unsafe_allow_html=True)
     
     # 照片展示
