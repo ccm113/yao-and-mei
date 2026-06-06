@@ -96,6 +96,34 @@ def add_secret(content, user_name, user_id, timestamp):
         print(error_msg)
         return False, error_msg
 
+def update_secret(secret_id, content):
+    global last_error
+    if not supabase:
+        return False, "数据库未连接"
+    try:
+        response = supabase.table('secrets').update({'content': content}).eq('id', secret_id).execute()
+        last_error = None
+        return True, "成功"
+    except Exception as e:
+        error_msg = f"更新悄悄话失败: {str(e)}"
+        last_error = error_msg
+        print(error_msg)
+        return False, error_msg
+
+def delete_secret(secret_id):
+    global last_error
+    if not supabase:
+        return False, "数据库未连接"
+    try:
+        response = supabase.table('secrets').delete().eq('id', secret_id).execute()
+        last_error = None
+        return True, "成功"
+    except Exception as e:
+        error_msg = f"删除悄悄话失败: {str(e)}"
+        last_error = error_msg
+        print(error_msg)
+        return False, error_msg
+
 # ========== 个人画像操作 ==========
 def get_portrait(person):
     global last_error

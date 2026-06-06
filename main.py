@@ -1037,16 +1037,25 @@ def secret_page():
                 user_name = secret.get('user_name', secret.get('user', '匿名用户'))
                 with st.expander(f"悄悄话 {secret.get('id', i+1)} · {user_name}"):
                     # 编辑模式
+                    secret_id = secret.get('id', i+1)
                     if st.session_state.editing_index == i:
-                        new_content = st.text_area("修改内容：", value=secret['content'], height=100)
+                        new_content = st.text_area("修改内容：", value=secret.get('content', ''), height=100)
                         col1, col2 = st.columns(2)
                         with col1:
                             if st.button(f"✅ 保存修改 {i}", key=f"save_{i}"):
-                                secrets[i]['content'] = new_content.strip()
-                                save_data(SECRET_FILE, secrets)
-                                st.session_state.editing_index = None
-                                st.success("修改已保存！")
-                                st.rerun()
+                                success = False
+                                if is_db_connected():
+                                    success, msg = update_secret(secret_id, new_content.strip())
+                                    if not success:
+                                        st.error(f"修改失败: {msg}")
+                                else:
+                                    secrets[i]['content'] = new_content.strip()
+                                    save_data(SECRET_FILE, secrets)
+                                    success = True
+                                if success:
+                                    st.session_state.editing_index = None
+                                    st.success("修改已保存！")
+                                    st.rerun()
                         with col2:
                             if st.button(f"❌ 取消 {i}", key=f"cancel_{i}"):
                                 st.session_state.editing_index = None
@@ -1055,49 +1064,25 @@ def secret_page():
                         st.markdown(f"> {secret.get('content', '')}")
                         st.markdown(f"*发送者：{user_name} (ID: {secret.get('user_id', '未知ID')}) · {secret.get('timestamp', '未知时间')}*")
                         
-                        # 显示回复列表
-                        replies = secret.get('replies', [])
-                        if replies:
-                            st.markdown("---")
-                            st.markdown("**回复：**")
-                            for j, reply in enumerate(replies):
-                                st.markdown(f"🔹 **{reply['user']}** (ID: {reply.get('user_id', '未知ID')})")
-                                st.markdown(f"> {reply['content']}")
-                                st.markdown(f"*回复时间：{reply.get('timestamp', '未知时间')}*")
-                                if st.button(f"🗑️ 删除回复 {j}", key=f"delete_reply_{i}_{j}"):
-                                    del secrets[i]['replies'][j]
-                                    save_data(SECRET_FILE, secrets)
-                                    st.success("回复已删除！")
-                                    st.rerun()
-                        
-                        # 回复输入框
-                        st.markdown("---")
-                        reply_text = st.text_input(f"回复悄悄话 {secret['id']}：", key=f"reply_input_{i}")
-                        if st.button(f"💬 发送回复", key=f"send_reply_{i}"):
-                            if reply_text.strip():
-                                if 'replies' not in secrets[i]:
-                                    secrets[i]['replies'] = []
-                                secrets[i]['replies'].append({
-                                    "user": st.session_state.get('username', '匿名用户'),
-                                    "user_id": st.session_state.get('user_id', '未知ID'),
-                                    "content": reply_text.strip(),
-                                    "timestamp": st.session_state.get('login_time', '未知时间')
-                                })
-                                save_data(SECRET_FILE, secrets)
-                                st.success("回复已发送！")
-                                st.rerun()
-                        
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button(f"✏️ 修改 {i}", key=f"edit_{i}"):
+                            if st.button(f"✏️ 修改", key=f"edit_{i}"):
                                 st.session_state.editing_index = i
                                 st.rerun()
                         with col2:
-                            if st.button(f"🗑️ 删除 {i}", key=f"delete_secret_{i}"):
-                                del secrets[i]
-                                save_data(SECRET_FILE, secrets)
-                                st.success("悄悄话已删除！")
-                                st.rerun()
+                            if st.button(f"🗑️ 删除", key=f"delete_secret_{i}"):
+                                success = False
+                                if is_db_connected():
+                                    success, msg = delete_secret(secret_id)
+                                    if not success:
+                                        st.error(f"删除失败: {msg}")
+                                else:
+                                    del secrets[i]
+                                    save_data(SECRET_FILE, secrets)
+                                    success = True
+                                if success:
+                                    st.success("悄悄话已删除！")
+                                    st.rerun()
         else:
             st.markdown("暂无悄悄话")
         
