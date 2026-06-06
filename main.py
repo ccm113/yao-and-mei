@@ -674,91 +674,52 @@ def home_page():
 def story_page():
     st.title("💌 见信如面")
     
-    # 使用HTML实现首行缩进和右对齐
     st.markdown("---")
+    
+    # 使用简单的Markdown显示信件内容
+    letter_content = """
+**📜 吾友昕垚，展信好。**
+
+认识你至今，已过六年有余。每当想起我们一起穿着作训服训练的日子，心里仍旧温热，像冬日里捂着一杯热茶。那时你从一名普通学员，渐渐成长为优秀的班长，最后成了协会里许多人抬头就能看见的光。我也曾被这光照亮，但更多时候，我甘愿站在你身后，做那光下的阴影——因为看不得别人利用你的善良、欺负你的隐忍，便总抢着去当那个“坏人”。而你始终情绪稳定，事事为人着想，哪怕自己累得顾不上喘一口气。
+
+我知道，以你的性情，走到哪里都能结交知心的朋友。所以从不担心你会过不好。可人生无常，恰是寻常。并不是你足够好，身边就全是好人——总有蛇鼠之辈，总有愤懑之事，把你的日子填得满满当当。可也正是这些，让你一点点变得更结实。
+
+那两年，我们断断续续地联系，许久未见。你我相隔江河千里，但心中念着你，便不觉遥远。我去外地求学之前，你专程奔波百里来送我。当时并未觉得什么，到了异乡才慢慢明白——哪儿都不如家乡好。于是那份送别的情意，便一天天在心里变得厚重。
+
+后来你辞了工作，来到我所在的城市。虽然每日不知你在忙些什么，但总算能连续几日与你朝夕相处。只是一想到你总提着大包小包东奔西跑，什么事都自己扛，生怕麻烦别人，便又心疼又怨你——怨你为什么不信，我可以替你托底。或许是你的家教使你事事尽心，乐善好施；也或许是我真的还不够强大，不足以为你依靠。但我仍旧贪心，盼你能多依赖我一些。
+
+今年见到你带了男朋友来，我是真心高兴。你们站在一起，身高长相般配，言谈举止间也势均力敌。我想，这下好了，终于有人可以照顾你了。你不需要总做那个照顾别人的人，让他好好照顾你吧。放心大胆去爱，无论如何，你还有我。当然，也别见色忘友，要时常抽空来见我。
+
+今年终于能一起过你的生日了。
+
+> 生日快乐。
+> 永远快乐。
+> 永远一往无前，永远能战，永远做你自己。
+
+---
+
+**你的挚友**  
+**梅**
+    """
+    
+    # 添加样式
     st.markdown("""
     <style>
-    .letter-container {
+    .letter-content {
         max-width: 800px;
         margin: 0 auto;
         padding: 40px;
         background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
         border-radius: 24px;
         box-shadow: 0 10px 40px rgba(236, 72, 153, 0.1);
-    }
-    .letter-title {
-        text-align: center;
-        color: #be185d;
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 30px;
-    }
-    .letter-paragraph {
         font-size: 16px;
         line-height: 2;
         color: #4c1d4e;
-        text-indent: 2em;
-        margin-bottom: 20px;
-    }
-    .letter-closing {
-        font-size: 16px;
-        line-height: 2;
-        color: #4c1d4e;
-        text-indent: 2em;
-        margin-bottom: 30px;
-    }
-    .letter-sender {
-        text-align: right;
-        color: #7c2d7c;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-    .letter-signature {
-        text-align: right;
-        color: #7c2d7c;
-        font-size: 18px;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="letter-container">
-        <div class="letter-title">📜 吾友昕垚，展信好。</div>
-        
-        <div class="letter-paragraph">
-            认识你至今，已过六年有余。每当想起我们一起穿着作训服训练的日子，心里仍旧温热，像冬日里捂着一杯热茶。那时你从一名普通学员，渐渐成长为优秀的班长，最后成了协会里许多人抬头就能看见的光。我也曾被这光照亮，但更多时候，我甘愿站在你身后，做那光下的阴影——因为看不得别人利用你的善良、欺负你的隐忍，便总抢着去当那个“坏人”。而你始终情绪稳定，事事为人着想，哪怕自己累得顾不上喘一口气。
-        </div>
-        
-        <div class="letter-paragraph">
-            我知道，以你的性情，走到哪里都能结交知心的朋友。所以从不担心你会过不好。可人生无常，恰是寻常。并不是你足够好，身边就全是好人——总有蛇鼠之辈，总有愤懑之事，把你的日子填得满满当当。可也正是这些，让你一点点变得更结实。
-        </div>
-        
-        <div class="letter-paragraph">
-            那两年，我们断断续续地联系，许久未见。你我相隔江河千里，但心中念着你，便不觉遥远。我去外地求学之前，你专程奔波百里来送我。当时并未觉得什么，到了异乡才慢慢明白——哪儿都不如家乡好。于是那份送别的情意，便一天天在心里变得厚重。
-        </div>
-        
-        <div class="letter-paragraph">
-            后来你辞了工作，来到我所在的城市。虽然每日不知你在忙些什么，但总算能连续几日与你朝夕相处。只是一想到你总提着大包小包东奔西跑，什么事都自己扛，生怕麻烦别人，便又心疼又怨你——怨你为什么不信，我可以替你托底。或许是你的家教使你事事尽心，乐善好施；也或许是我真的还不够强大，不足以为你依靠。但我仍旧贪心，盼你能多依赖我一些。
-        </div>
-        
-        <div class="letter-paragraph">
-            今年见到你带了男朋友来，我是真心高兴。你们站在一起，身高长相般配，言谈举止间也势均力敌。我想，这下好了，终于有人可以照顾你了。你不需要总做那个照顾别人的人，让他好好照顾你吧。放心大胆去爱，无论如何，你还有我。当然，也别见色忘友，要时常抽空来见我。
-        </div>
-        
-        <div class="letter-paragraph">
-            今年终于能一起过你的生日了。
-        </div>
-        
-        <div class="letter-closing">
-            生日快乐。<br>
-            永远快乐。<br>
-            永远一往无前，永远能战，永远做你自己。
-        </div>
-        
-        <div class="letter-sender">你的挚友</div>
-        <div class="letter-signature">梅</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="letter-content">{letter_content}</div>', unsafe_allow_html=True)
     
     st.markdown("---")
     st.markdown("💖 " + "💕" * 20 + " 💖")
