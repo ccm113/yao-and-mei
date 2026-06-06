@@ -554,12 +554,16 @@ def home_page():
     st.markdown("---")
     
     # 初始化 session_state
-    if 'upload_success' not in st.session_state:
-        st.session_state.upload_success = False
+    # 初始化状态
+    if 'uploaded_base64' not in st.session_state:
+        st.session_state.uploaded_base64 = None
+    if 'photo_description' not in st.session_state:
+        st.session_state.photo_description = ""
     
     uploaded_file = st.file_uploader("🖼️ 添加图片", type=["jpg", "jpeg", "png", "gif"])
     
-    if uploaded_file is not None and not st.session_state.upload_success:
+    # 处理上传的图片
+    if uploaded_file is not None:
         # 将图片转换为 Base64 编码
         import base64
         import io
@@ -583,35 +587,43 @@ def home_page():
             img.save(buffer, format='JPEG', quality=85)
             base64_str = base64.b64encode(buffer.getvalue()).decode()
             
-            # 生成 Base64 URL
-            base64_url = f"data:image/jpeg;base64,{base64_str}"
+            # 保存到 session_state
+            st.session_state.uploaded_base64 = f"data:image/jpeg;base64,{base64_str}"
             
-            # 获取描述
-            description = st.text_input("请添加照片描述：", key="desc_input")
-            
-            # 添加到数据库或本地文件
+        except Exception as e:
+            st.error(f"图片处理失败：{e}")
+            st.session_state.uploaded_base64 = None
+    
+    # 如果有上传的图片，显示输入框和发送按钮
+    if st.session_state.uploaded_base64:
+        # 显示预览
+        st.image(st.session_state.uploaded_base64, caption="预览", width=300)
+        
+        # 照片描述输入
+        st.session_state.photo_description = st.text_input("请添加照片描述（这张照片的故事）：", 
+                                                          st.session_state.photo_description)
+        
+        # 发送按钮
+        if st.button("📤 发送照片"):
             caption = f"照片 {len(photos) + 1}"
-            desc = description if description else "暂无描述"
+            desc = st.session_state.photo_description if st.session_state.photo_description else "暂无描述"
             
             if is_db_connected():
-                add_photo(base64_url, caption, desc)
+                add_photo(st.session_state.uploaded_base64, caption, desc)
             else:
                 photos.append({
-                    "url": base64_url,
+                    "url": st.session_state.uploaded_base64,
                     "caption": caption,
                     "description": desc
                 })
                 save_data(PHOTOS_FILE, photos)
             
             st.success("图片上传成功！")
-            st.session_state.upload_success = True
+            
+            # 重置状态
+            st.session_state.uploaded_base64 = None
+            st.session_state.photo_description = ""
             st.rerun()
-        except Exception as e:
-            st.error(f"图片处理失败：{str(e)}")
-    
-    # 重置上传状态
-    if st.session_state.upload_success:
-        st.session_state.upload_success = False
     
     # 关键词展示
     st.markdown("---")
@@ -726,6 +738,11 @@ def qna_page():
     
     # 答题模式
     if st.session_state.qna_view_mode == 'quiz':
+        # 检查是否有题目
+        if not qna_data:
+            st.warning("暂无真心话题目，请联系管理员添加！")
+            return
+        
         # 随机选择一个题目（每次进入可能不同）
         if 'random_q_index' not in st.session_state:
             st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
