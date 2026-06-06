@@ -486,6 +486,15 @@ def home_page():
     # 加载照片数据（优先使用数据库）
     if is_db_connected():
         photos = get_photos()
+        # 如果数据库为空，使用本地图片
+        if not photos:
+            photos = []
+            image_dir = "image"
+            if os.path.exists(image_dir):
+                for i in range(1, 12):
+                    img_path = os.path.join(image_dir, f"tupian ({i}).jpg")
+                    if os.path.exists(img_path):
+                        photos.append({"url": img_path, "caption": f"照片 {i}", "description": "暂无描述"})
     else:
         photos = load_data(PHOTOS_FILE)
     
