@@ -149,6 +149,21 @@ def load_data(filepath):
 def save_data(filepath, data):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    # 自动提交到 GitHub
+    import subprocess
+    try:
+        # 添加所有 JSON 文件
+        subprocess.run(['git', 'add', '*.json'], capture_output=True, text=True)
+        # 提交（包含时间戳）
+        import time
+        commit_message = f"Auto-save data at {time.strftime('%Y-%m-%d %H:%M:%S')}"
+        subprocess.run(['git', 'commit', '-m', commit_message], capture_output=True, text=True)
+        # 推送到 GitHub
+        subprocess.run(['git', 'push', 'origin', 'main'], capture_output=True, text=True)
+    except Exception as e:
+        # 如果 Git 操作失败，不影响正常使用
+        pass
 
 # 初始化
 init_files()
