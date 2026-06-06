@@ -498,6 +498,11 @@ def home_page():
     else:
         photos = load_data(PHOTOS_FILE)
     
+    # 限制照片数量不超过15张，超过时隐藏最早的（保留最后15张）
+    MAX_PHOTOS = 15
+    if len(photos) > MAX_PHOTOS:
+        photos = photos[-MAX_PHOTOS:]  # 只保留最后15张
+    
     # 状态管理
     if 'selected_photo' not in st.session_state:
         st.session_state.selected_photo = None
