@@ -534,14 +534,20 @@ def home_page():
                             st.rerun()
                     with col2:
                         if st.button(f"🗑️ 删除", key=f"delete-{i}", use_container_width=True):
+                            success = False
                             if is_db_connected():
-                                delete_photo(photo["id"])
+                                success, msg = delete_photo(photo["id"])
+                                if not success:
+                                    st.error(f"删除失败: {msg}")
                             else:
                                 del photos[i]
                                 save_data(PHOTOS_FILE, photos)
-                            st.session_state.selected_photo = None
-                            st.success("照片已删除！")
-                            st.rerun()
+                                success = True
+                            
+                            if success:
+                                st.session_state.selected_photo = None
+                                st.success("照片已删除！")
+                                st.rerun()
             
             # 详情弹窗
             if st.session_state.selected_photo is not None:
@@ -608,8 +614,11 @@ def home_page():
             caption = f"照片 {len(photos) + 1}"
             desc = st.session_state.photo_description if st.session_state.photo_description else "暂无描述"
             
+            success = False
             if is_db_connected():
-                add_photo(st.session_state.uploaded_base64, caption, desc)
+                success, msg = add_photo(st.session_state.uploaded_base64, caption, desc)
+                if not success:
+                    st.error(f"上传失败: {msg}")
             else:
                 photos.append({
                     "url": st.session_state.uploaded_base64,
@@ -617,13 +626,14 @@ def home_page():
                     "description": desc
                 })
                 save_data(PHOTOS_FILE, photos)
+                success = True
             
-            st.success("图片上传成功！")
-            
-            # 重置状态
-            st.session_state.uploaded_base64 = None
-            st.session_state.photo_description = ""
-            st.rerun()
+            if success:
+                st.success("图片上传成功！")
+                # 重置状态
+                st.session_state.uploaded_base64 = None
+                st.session_state.photo_description = ""
+                st.rerun()
     
     # 关键词展示
     st.markdown("---")
@@ -772,17 +782,22 @@ def qna_page():
                 current_q_answers = current_q.get('answers', [])
                 current_q_answers.append(new_answer)
                 
+                success = False
                 if is_db_connected():
                     qna_id = current_q.get('id', 1)
-                    update_qna(qna_id, current_q_answers)
+                    success, msg = update_qna(qna_id, current_q_answers)
+                    if not success:
+                        st.error(f"保存失败: {msg}")
                 else:
                     qna_data[st.session_state.random_q_index]['answers'] = current_q_answers
                     save_data(QNA_FILE, qna_data)
+                    success = True
                 
-                st.success("答案已保存！")
-                # 清除输入框
-                st.session_state.qna_answer = ""
-                # 随机下一题
+                if success:
+                    st.success("答案已保存！")
+                    # 清除输入框
+                    st.session_state.qna_answer = ""
+                    # 随机下一题
                 st.session_state.random_q_index = random.randint(0, len(qna_data) - 1)
                 st.rerun()
             else:
@@ -864,16 +879,21 @@ def portrait_page():
                 emoji = random.choice(emojis)
                 new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
                 
+                success = False
                 if is_db_connected():
-                    add_portrait('yao', new_desc_with_emoji)
+                    success, msg = add_portrait('yao', new_desc_with_emoji)
+                    if not success:
+                        st.error(f"添加失败: {msg}")
                 else:
                     portrait_data['yao'].append(new_desc_with_emoji)
                     save_data(PORTRAIT_FILE, portrait_data)
+                    success = True
                 
-                st.success("描述已添加！")
-                # 清除输入框
-                st.session_state.portrait_input_yao = ""
-                st.rerun()
+                if success:
+                    st.success("描述已添加！")
+                    # 清除输入框
+                    st.session_state.portrait_input_yao = ""
+                    st.rerun()
     
     # 梅的画像
     elif st.session_state.get('selected_portrait') == 'mei':
@@ -909,8 +929,11 @@ def portrait_page():
                 emoji = random.choice(emojis)
                 new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
                 
+                success = False
                 if is_db_connected():
-                    add_portrait('mei', new_desc_with_emoji)
+                    success, msg = add_portrait('mei', new_desc_with_emoji)
+                    if not success:
+                        st.error(f"添加失败: {msg}")
                 else:
                     portrait_data['mei'].append(new_desc_with_emoji)
                     save_data(PORTRAIT_FILE, portrait_data)
@@ -957,8 +980,11 @@ def secret_page():
                 user_id = st.session_state.get('user_id', '未知ID')
                 timestamp = st.session_state.get('login_time', '未知时间')
                 
+                success = False
                 if is_db_connected():
-                    add_secret(secret_text.strip(), user_name, user_id, timestamp)
+                    success, msg = add_secret(secret_text.strip(), user_name, user_id, timestamp)
+                    if not success:
+                        st.error(f"发送失败: {msg}")
                 else:
                     secrets = load_data(SECRET_FILE)
                     secrets.append({
@@ -969,11 +995,13 @@ def secret_page():
                         "timestamp": timestamp
                     })
                     save_data(SECRET_FILE, secrets)
+                    success = True
                 
-                st.success("悄悄话已发送！")
-                # 清除输入框
-                st.session_state.secret_text = ""
-                st.rerun()
+                if success:
+                    st.success("悄悄话已发送！")
+                    # 清除输入框
+                    st.session_state.secret_text = ""
+                    st.rerun()
         
         # 查看所有悄悄话按钮
         if st.button("📋 查看所有悄悄话"):
