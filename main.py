@@ -477,37 +477,50 @@ def home_page():
         
         # 检查是否已经处理过这个文件
         if st.session_state.uploaded_file_id != file_identifier:
-            # 创建上传目录
-            upload_dir = "uploads"
-            if not os.path.exists(upload_dir):
-                os.makedirs(upload_dir)
+            # 将图片转换为 Base64 编码
+            import base64
+            import io
+            from PIL import Image, ImageOps
             
-            # 生成唯一文件名
-            import uuid
-            file_extension = uploaded_file.name.split('.')[-1]
-            file_name = f"{uuid.uuid4().hex}.{file_extension}"
-            file_path = os.path.join(upload_dir, file_name)
-            
-            # 保存文件
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            
-            # 获取描述
-            description = st.text_input("请添加照片描述：", key="desc_input")
-            
-            # 添加到照片列表
-            photos.append({
-                "url": file_path,
-                "caption": f"照片 {len(photos) + 1}",
-                "description": description if description else "暂无描述"
-            })
-            save_data(PHOTOS_FILE, photos)
-            
-            # 更新 session_state 标记已处理
-            st.session_state.uploaded_file_id = file_identifier
-            
-            st.success("图片上传成功！")
-            st.rerun()
+            try:
+                # 读取图片
+                img = Image.open(uploaded_file)
+                # 修复EXIF方向问题
+                img = ImageOps.exif_transpose(img)
+                
+                # 缩小图片尺寸（提高加载速度）
+                max_size = 800
+                width, height = img.size
+                if max(width, height) > max_size:
+                    ratio = max_size / max(width, height)
+                    img = img.resize((int(width * ratio), int(height * ratio)), Image.Resampling.LANCZOS)
+                
+                # 转换为JPEG格式并压缩
+                buffer = io.BytesIO()
+                img.save(buffer, format='JPEG', quality=85)
+                base64_str = base64.b64encode(buffer.getvalue()).decode()
+                
+                # 生成 Base64 URL
+                base64_url = f"data:image/jpeg;base64,{base64_str}"
+                
+                # 获取描述
+                description = st.text_input("请添加照片描述：", key="desc_input")
+                
+                # 添加到照片列表（使用 Base64 编码直接存储）
+                photos.append({
+                    "url": base64_url,
+                    "caption": f"照片 {len(photos) + 1}",
+                    "description": description if description else "暂无描述"
+                })
+                save_data(PHOTOS_FILE, photos)
+                
+                # 更新 session_state 标记已处理
+                st.session_state.uploaded_file_id = file_identifier
+                
+                st.success("图片上传成功！")
+                st.rerun()
+            except Exception as e:
+                st.error(f"图片处理失败：{str(e)}")
         else:
             # 显示描述输入（如果是重复上传但还没填描述）
             if 'desc_input' not in st.session_state:
