@@ -4,7 +4,14 @@ import os
 import base64
 import random
 
-# 数据文件路径
+# 加载环境变量
+from dotenv import load_dotenv
+load_dotenv()
+
+# 导入数据库模块
+from db import *
+
+# 数据文件路径（备用）
 USERS_FILE = "users.json"
 PHOTOS_FILE = "photos.json"
 QNA_FILE = "qna.json"
@@ -476,8 +483,11 @@ def home_page():
     """, unsafe_allow_html=True)
     st.markdown('<div class="section-title">📷 分享一张故事照片</div>', unsafe_allow_html=True)
     
-    # 加载照片数据
-    photos = load_data(PHOTOS_FILE)
+    # 加载照片数据（优先使用数据库）
+    if is_db_connected():
+        photos = get_photos()
+    else:
+        photos = load_data(PHOTOS_FILE)
     
     # 状态管理
     if 'selected_photo' not in st.session_state:
@@ -490,12 +500,17 @@ def home_page():
         # 预加载所有图片
         photo_urls = []
         for photo in photos:
-            url = photo["url"]
-            if os.path.exists(url):
+            url = photo.get("url", "")
+            if url and os.path.exists(url):
                 base64_str = image_to_base64(url)
                 if base64_str:
                     url = f"data:image/jpeg;base64,{base64_str}"
-            photo_urls.append({"url": url, "caption": photo.get("caption", ""), "description": photo.get("description", "")})
+            photo_urls.append({
+                "id": photo.get("id", i),
+                "url": url, 
+                "caption": photo.get("caption", ""), 
+                "description": photo.get("description", "")
+            })
         
         # 使用 Streamlit 原生组件展示照片网格（不带标题）
         if photos:
@@ -519,8 +534,11 @@ def home_page():
                             st.rerun()
                     with col2:
                         if st.button(f"🗑️ 删除", key=f"delete-{i}", use_container_width=True):
-                            del photos[i]
-                            save_data(PHOTOS_FILE, photos)
+                            if is_db_connected():
+                                delete_photo(photo["id"])
+                            else:
+                                del photos[i]
+                                save_data(PHOTOS_FILE, photos)
                             st.session_state.selected_photo = None
                             st.success("照片已删除！")
                             st.rerun()
@@ -571,13 +589,19 @@ def home_page():
             # 获取描述
             description = st.text_input("请添加照片描述：", key="desc_input")
             
-            # 添加到照片列表（使用 Base64 编码直接存储）
-            photos.append({
-                "url": base64_url,
-                "caption": f"照片 {len(photos) + 1}",
-                "description": description if description else "暂无描述"
-            })
-            save_data(PHOTOS_FILE, photos)
+            # 添加到数据库或本地文件
+            caption = f"照片 {len(photos) + 1}"
+            desc = description if description else "暂无描述"
+            
+            if is_db_connected():
+                add_photo(base64_url, caption, desc)
+            else:
+                photos.append({
+                    "url": base64_url,
+                    "caption": caption,
+                    "description": desc
+                })
+                save_data(PHOTOS_FILE, photos)
             
             st.success("图片上传成功！")
             st.session_state.upload_success = True
@@ -680,8 +704,11 @@ def qna_page():
     st.title("💬 真心话问答")
     st.markdown("### 加深彼此的了解")
     
-    # 加载真心话数据
-    qna_data = load_data(QNA_FILE)
+    # 加载真心话数据（优先使用数据库）
+    if is_db_connected():
+        qna_data = get_qna()
+    else:
+        qna_data = load_data(QNA_FILE)
     
     # 状态管理
     if 'qna_view_mode' not in st.session_state:
@@ -718,13 +745,23 @@ def qna_page():
         if st.button("💾 保存答案"):
             if answer.strip():
                 # 添加答案到数据
-                qna_data[st.session_state.random_q_index]['answers'].append({
+                new_answer = {
                     "user": username,
                     "user_id": st.session_state.get('user_id', '未知ID'),
                     "answer": answer.strip(),
                     "timestamp": st.session_state.get('login_time', '未知时间')
-                })
-                save_data(QNA_FILE, qna_data)
+                }
+                
+                current_q_answers = current_q.get('answers', [])
+                current_q_answers.append(new_answer)
+                
+                if is_db_connected():
+                    qna_id = current_q.get('id', 1)
+                    update_qna(qna_id, current_q_answers)
+                else:
+                    qna_data[st.session_state.random_q_index]['answers'] = current_q_answers
+                    save_data(QNA_FILE, qna_data)
+                
                 st.success("答案已保存！")
                 # 清除输入框
                 st.session_state.qna_answer = ""
@@ -759,8 +796,13 @@ def portrait_page():
     st.title("👩‍🦰 个人画像")
     st.markdown("### 了解我们")
     
-    # 加载画像数据
-    portrait_data = load_data(PORTRAIT_FILE)
+    # 加载画像数据（优先使用数据库）
+    if is_db_connected():
+        yao_descriptions = get_portrait('yao')
+        mei_descriptions = get_portrait('mei')
+        portrait_data = {'yao': yao_descriptions, 'mei': mei_descriptions}
+    else:
+        portrait_data = load_data(PORTRAIT_FILE)
     
     # 两个按钮
     col1, col2 = st.columns(2)
@@ -805,8 +847,12 @@ def portrait_page():
                 emoji = random.choice(emojis)
                 new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
                 
-                portrait_data['yao'].append(new_desc_with_emoji)
-                save_data(PORTRAIT_FILE, portrait_data)
+                if is_db_connected():
+                    add_portrait('yao', new_desc_with_emoji)
+                else:
+                    portrait_data['yao'].append(new_desc_with_emoji)
+                    save_data(PORTRAIT_FILE, portrait_data)
+                
                 st.success("描述已添加！")
                 # 清除输入框
                 st.session_state.portrait_input_yao = ""
@@ -846,14 +892,17 @@ def portrait_page():
                 emoji = random.choice(emojis)
                 new_desc_with_emoji = f"{emoji} {new_desc.strip()}"
                 
-                portrait_data['mei'].append(new_desc_with_emoji)
-                save_data(PORTRAIT_FILE, portrait_data)
+                if is_db_connected():
+                    add_portrait('mei', new_desc_with_emoji)
+                else:
+                    portrait_data['mei'].append(new_desc_with_emoji)
+                    save_data(PORTRAIT_FILE, portrait_data)
+                
                 st.success("描述已添加！")
                 # 清除输入框
                 st.session_state.portrait_input_mei = ""
                 st.rerun()
 
-# 主程序
 # 悄悄话
 def secret_page():
     st.title("💌 悄悄话")
@@ -881,15 +930,23 @@ def secret_page():
         # 发送按钮
         if st.button("✉️ 发送悄悄话"):
             if secret_text.strip():
-                secrets = load_data(SECRET_FILE)
-                secrets.append({
-                    "id": len(secrets) + 1,
-                    "content": secret_text.strip(),
-                    "user": st.session_state.get('username', '匿名用户'),
-                    "user_id": st.session_state.get('user_id', '未知ID'),
-                    "timestamp": st.session_state.get('login_time', '未知时间')
-                })
-                save_data(SECRET_FILE, secrets)
+                user_name = st.session_state.get('username', '匿名用户')
+                user_id = st.session_state.get('user_id', '未知ID')
+                timestamp = st.session_state.get('login_time', '未知时间')
+                
+                if is_db_connected():
+                    add_secret(secret_text.strip(), user_name, user_id, timestamp)
+                else:
+                    secrets = load_data(SECRET_FILE)
+                    secrets.append({
+                        "id": len(secrets) + 1,
+                        "content": secret_text.strip(),
+                        "user": user_name,
+                        "user_id": user_id,
+                        "timestamp": timestamp
+                    })
+                    save_data(SECRET_FILE, secrets)
+                
                 st.success("悄悄话已发送！")
                 # 清除输入框
                 st.session_state.secret_text = ""
@@ -904,7 +961,11 @@ def secret_page():
     else:
         st.subheader("📚 所有悄悄话")
         
-        secrets = load_data(SECRET_FILE)
+        # 优先使用数据库
+        if is_db_connected():
+            secrets = get_secrets()
+        else:
+            secrets = load_data(SECRET_FILE)
         
         if secrets:
             for i, secret in enumerate(secrets):
