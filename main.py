@@ -513,7 +513,7 @@ def home_page():
     with st.spinner("正在加载照片..."):
         # 预加载所有图片
         photo_urls = []
-        for photo in photos:
+        for i, photo in enumerate(photos):
             url = photo.get("url", "")
             if url and os.path.exists(url):
                 base64_str = image_to_base64(url)
@@ -1034,7 +1034,8 @@ def secret_page():
         
         if secrets:
             for i, secret in enumerate(secrets):
-                with st.expander(f"悄悄话 {secret['id']} · {secret['user']}"):
+                user_name = secret.get('user_name', secret.get('user', '匿名用户'))
+                with st.expander(f"悄悄话 {secret.get('id', i+1)} · {user_name}"):
                     # 编辑模式
                     if st.session_state.editing_index == i:
                         new_content = st.text_area("修改内容：", value=secret['content'], height=100)
