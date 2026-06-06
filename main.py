@@ -178,12 +178,181 @@ def sidebar():
 
 # 首页
 def home_page():
-    st.title("💕 垚＆槑")
-    st.markdown("### 欢迎来到我们的精神小世界")
+    # 精美头部装饰
+    st.markdown("""
+    <style>
+    .header-container {
+        background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%);
+        border-radius: 24px;
+        padding: 60px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(236, 72, 153, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    .header-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(251, 146, 60, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .header-container::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .title-text {
+        font-size: 48px;
+        font-weight: bold;
+        color: #be185d;
+        text-align: center;
+        margin-bottom: 10px;
+        text-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+    }
+    .subtitle-text {
+        font-size: 18px;
+        color: #831843;
+        text-align: center;
+        opacity: 0.9;
+    }
+    .decoration {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 24px;
+        letter-spacing: 10px;
+    }
+    .stats-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+    .stats-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #f472b6;
+    }
+    .stats-label {
+        font-size: 14px;
+        color: #9ca3af;
+        margin-top: 5px;
+    }
+    .quote-box {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-left: 4px solid #fbbf24;
+        border-radius: 0 16px 16px 0;
+        padding: 24px 30px;
+        margin: 30px 0;
+    }
+    .quote-text {
+        font-size: 18px;
+        color: #92400e;
+        font-style: italic;
+        line-height: 1.8;
+    }
+    .quote-author {
+        text-align: right;
+        color: #b45309;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # 精美头部
+    st.markdown("""
+    <div class="header-container">
+        <div class="title-text">💕 垚 & 槑</div>
+        <div class="subtitle-text">欢迎来到我们的精神小世界</div>
+        <div class="decoration">✨ ✨ ✨</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 统计卡片
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown("""
+        <div class="stats-card">
+            <div class="stats-number">6+</div>
+            <div class="stats-label">年闺蜜情</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class="stats-card">
+            <div class="stats-number">∞</div>
+            <div class="stats-label">美好回忆</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown("""
+        <div class="stats-card">
+            <div class="stats-number">💕</div>
+            <div class="stats-label">真心相伴</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col4:
+        st.markdown("""
+        <div class="stats-card">
+            <div class="stats-number">💫</div>
+            <div class="stats-label">未来可期</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # 引言语录
+    st.markdown("""
+    <div class="quote-box">
+        <div class="quote-text">
+            "真正的友谊不是花言巧语，而是在最困难的时候，
+            朋友依然在你身边，默默支持你。"
+        </div>
+        <div class="quote-author">—— 垚 & 槑</div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # 照片展示
     st.markdown("---")
-    st.header("📷 分享一张故事照片")
+    st.markdown("""
+    <style>
+    .section-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #be185d;
+        text-align: center;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+    .section-title::before,
+    .section-title::after {
+        content: '';
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #f472b6);
+    }
+    .section-title::after {
+        background: linear-gradient(90deg, #f472b6, transparent);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    st.markdown('<div class="section-title">📷 分享一张故事照片</div>', unsafe_allow_html=True)
     
     # 加载照片数据
     photos = load_data(PHOTOS_FILE)
